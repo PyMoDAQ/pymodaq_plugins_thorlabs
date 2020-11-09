@@ -1,10 +1,8 @@
-# PyMoDAQ Plugins
+# PyMoDAQ Plugins Thorlabs
 
 PyMoDAQ, Modular Data Acquisition with Python, is a set of **python** modules used to perform automated measurements. 
 
-This repository contains various hardware plugins compatible with PyMoDAQ
-
-For an exhaustive list of the available plugins, see https://docs.google.com/spreadsheets/d/1wfMfvLwTitZd2R2m1O5i6wVEaX1lJBahP2HUbxVdidg
+This repository contains a set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10CR1 (stepper rotation actuator), Kinesis Flipper, Kinesis KSP100...)
 
 GitHub repo: https://github.com/CEMES-CNRS
 
