@@ -7,5 +7,5 @@ author = 'Sebastien Weber'
 author_email = 'sebastien.weber@cemes.cnrs.fr'
 
 #packages required for your plugin:
-packages_required = []
+packages_required = ['pythonnet',]
 ##
