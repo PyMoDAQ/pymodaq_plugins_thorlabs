@@ -40,6 +40,7 @@ Viewer0D
 Viewer2D
 ++++++++
 
-* **DCx cameras**: Tested with DCC3240M. Works with Windows. Precise installation instructions can be found here: https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html
+* **DCx cameras**: Tested with DCC3240M. Works with Windows. Precise installation instructions can be found here:
+https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the plugin file.
 
 
