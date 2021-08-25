@@ -12,7 +12,20 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         https://github.com/mabuchilab/Instrumental/blob/master/instrumental/drivers/
         cameras/uc480.py
     """
-    params = comon_parameters + []
+
+    # Look for plugged cameras and get the serial numbers
+    plugged_cameras = list_instruments(module='cameras.uc480')
+    serial_numbers = []
+    for paramset in plugged_cameras:
+        camera = instrument(paramset, reopen_policy='reuse')
+        serial_numbers.append(camera.serial.decode("utf-8"))
+
+    params = comon_parameters + [
+        {'title': 'Serial number:',
+         'name': 'serial_number',
+         'type': 'itemselect',
+         'value': dict(all_items=serial_numbers, selected=[serial_numbers[0]])},
+    ]
 
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
@@ -50,9 +63,16 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
                 else:
                     self.controller = controller
             else:
-                paramsets = list_instruments()
-                self.controller = instrument(paramsets[0])
-                # for now we suppose that only one camera is plugged
+                camera_serial = self.settings.child('serial_number').value()['selected']
+                plugged_cameras = list_instruments(module='cameras.uc480')
+                selected_camera = None
+                # Find the paramset that has the selected serial number
+                for paramset in plugged_cameras:
+                    camera = instrument(paramset, reopen_policy='reuse')
+                    if camera.serial.decode("utf-8") == camera_serial[0]:
+                        selected_camera = camera
+
+                self.controller = selected_camera
 
             image = self.controller.grab_image()
 
@@ -70,7 +90,7 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
             #                     labels=['dat0'], x_axis=self.x_axis, y_axis=self.y_axis)
             # ])
 
-            self.status.info = "Whatever info you want to log"
+            self.status.info = "Detector initialized"
             self.status.initialized = True
             self.status.controller = self.controller
             return self.status
