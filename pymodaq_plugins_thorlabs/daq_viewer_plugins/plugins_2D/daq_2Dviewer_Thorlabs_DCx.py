@@ -5,12 +5,26 @@ from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, comon_parameters
 from instrumental import instrument, list_instruments
 
 class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
-    """This plugin use the instrumental library:
+    """This plugin is intended for Thorlabs DCx cameras series.
+        It should not be compatible with Thorlabs scientific cameras.
+
+        This plugin use the instrumental library:
         https://instrumental-lib.readthedocs.io/en/stable/
 
         The class we use is defined here:
         https://github.com/mabuchilab/Instrumental/blob/master/instrumental/drivers/
         cameras/uc480.py
+
+        Prerequisite
+        ------------
+        This plugin works with Windows 10.
+        Installation procedure can be found here:
+            https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html
+        In particular, the ThorCam software should be installed and the .dll libraries
+            folder (where you can find uc480_64.dll) should be added in the environment
+            PATH variable.
+        In principle the dependencies (pywin32, nicelib) should be installed
+            automatically while installing the plugin.
     """
 
     # Look for plugged cameras and get the serial numbers
@@ -83,12 +97,6 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
             data_y_axis = image[:, 0]
             self.y_axis = Axis(data=data_y_axis, label='', units='')
             self.emit_y_axis()
-
-            # initialize viewers pannel with the future type of data
-            # self.data_grabed_signal_temp.emit([
-            #     DataFromPlugins(name='Mock1', data=["2D numpy array"], dim='Data2D',
-            #                     labels=['dat0'], x_axis=self.x_axis, y_axis=self.y_axis)
-            # ])
 
             self.status.info = "Detector initialized"
             self.status.initialized = True
