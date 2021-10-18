@@ -1,12 +1,23 @@
+"""
+Plugin for the K10CR1 Integrated Stepper motor for rotation
+Its is using the Instrumental package with its kinesis driver (based from the C-libraries)
+Thorlabs Kinesis drivers and SDKs should be installed and the path to where are located the dlls should be added to
+the PATH system environment variable
+"""
+
 from pymodaq.daq_move.utility_classes import DAQ_Move_base, main
 from pymodaq.daq_move.utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, find_dict_in_list_from_key_val
 import clr
 import sys
 from easydict import EasyDict as edict
+from instrumental.drivers.motion.kinesis import list_instruments
+from instrumental import instrument
 
+parameter_sets = list_instruments()
+serialnumbers = [pset['serial'] for pset in parameter_sets if pset['classname'] == 'K10CR1']
 
-class DAQ_Move_Kinesis(DAQ_Move_base):
+class DAQ_Move_K10CR1(DAQ_Move_base):
     """
         Wrapper object to access the kinesis fonctionnalities, similar wrapper for all controllers.
 
@@ -23,30 +34,11 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
     """
     _controller_units = 'degrees'
-
-    kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
-    try:
-        from System import Decimal
-        from System import Action
-        from System import UInt64
-        sys.path.append(kinesis_path)
-        clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
-        clr.AddReference("Thorlabs.MotionControl.IntegratedStepperMotorsCLI")
-        clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
-        import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
-        import Thorlabs.MotionControl.DeviceManagerCLI as Device
-        import Thorlabs.MotionControl.GenericMotorCLI as Generic
-        Device.DeviceManagerCLI.BuildDeviceList()
-        serialnumbers = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-
-    except:
-        serialnumbers = []
     is_multiaxes = False
 
     stage_names = []
 
-    params = [{'title': 'Kinesis library:', 'name': 'kinesis_lib', 'type': 'browsepath', 'value': kinesis_path},
-              {'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
+    params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'values': serialnumbers},
               {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children': [
                   {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes,
@@ -61,17 +53,8 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         super().__init__(parent, params_state)
 
         self.controller = None
-        self.settings.child('epsilon').setValue(0.01)
+        self.settings.child('epsilon').setValue(0.005)
 
-        try:
-            # kinesis_path=os.environ['Kinesis'] #environement variable pointing to 'C:\\Program Files\\Thorlabs\\Kinesis'
-            # to be adjusted on the different computers
-
-            self.move_done_action = self.Action[self.UInt64](self.move_done)
-
-        except Exception as e:
-            self.emit_status(ThreadCommand("Update_Status", [getLineInfo() + str(e), 'log']))
-            raise Exception(getLineInfo() + str(e))
 
     def commit_settings(self, param):
         """
@@ -83,22 +66,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
             *param*         instance of pyqtgraph parameter  The parameter to update
             =============== ================================ ========================
         """
-        if param.name() == 'kinesis_lib':
-            try:
-                sys.path.append(param.value())
-                clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
-                clr.AddReference("Thorlabs.MotionControl.IntegratedStepperMotorsCLI")
-                clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
-                import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
-                import Thorlabs.MotionControl.DeviceManagerCLI as Device
-                import Thorlabs.MotionControl.GenericMotorCLI as Generic
-                Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers = [str(ser) for ser in
-                                 Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-
-            except:
-                serialnumbers = []
-            self.settings.child('serial_number').setOpts(limits=serialnumbers)
+        pass
 
     def ini_stage(self, controller=None):
         """
@@ -137,24 +105,13 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
                     self.controller = controller
             else:  # Master stage
 
-                self.Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers = self.Device.DeviceManagerCLI.GetDeviceList(self.Integrated.CageRotator.DevicePrefix)
-                ser_bool = self.settings.child('serial_number').value() in serialnumbers
-                if ser_bool:
-                    self.controller = self.Integrated.CageRotator.CreateCageRotator(
-                        self.settings.child('serial_number').value())
-                    self.controller.Connect(self.settings.child('serial_number').value())
-                    self.controller.WaitForSettingsInitialized(5000)
-                    self.controller.StartPolling(250)
-                else:
-                    raise Exception("Not valid serial number")
-
-            info = self.controller.GetDeviceInfo().Name
+                self.controller = instrument(
+                    find_dict_in_list_from_key_val(parameter_sets, 'serial',
+                                                   self.settings.child('serial_number').value()))
+                self.controller.backlash = '0deg'
+            info = self.controller.get_info()
             self.settings.child('controller_id').setValue(info)
-            if not (self.controller.IsSettingsInitialized()):
-                raise (Exception("no Stage Connected"))
-            self.motorSettings = self.controller.GetMotorConfiguration(self.settings.child('serial_number').value(), 2)
-            self.controller.SetBacklash(self.Decimal(0))
+
             self.status.info = info
             self.status.controller = self.controller
             self.status.initialized = True
@@ -170,9 +127,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         """
             close the current instance of Kinesis instrument.
         """
-        self.controller.StopPolling();
-        self.controller.Disconnect();
-        self.controller.Dispose()
+        self.controller.close()
         self.controller = None
 
     def stop_motion(self):
@@ -181,7 +136,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
             --------
             DAQ_Move_base.move_done
         """
-        self.controller.stop(0)
+        self.controller.stop()
         self.move_done()
 
     def check_position(self):
@@ -192,7 +147,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
             --------
             DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
         """
-        pos = self.Decimal.ToDouble(self.controller.Position)
+        pos = self.controller.position.m_as('deg')
         pos = self.get_position_with_scaling(pos)
         self.emit_status(ThreadCommand('check_position', [pos]))
         return pos
@@ -214,42 +169,28 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         """
         position = self.check_bound(position)
         self.target_position = position
-
         position = self.set_position_with_scaling(position)
-        self.controller.MoveTo(self.Decimal(position), self.move_done_action)
+
+        self.controller.move_to(f'{position}deg', wait=False, move_type='abs')
         self.poll_moving()
 
     def move_Rel(self, position):
         """
-            | Make the hardware relative move from the given position of the Kinesis instrument after thread command signal was received in DAQ_Move_main.
-            |
-            | The final target position is given by **current_position+position**.
-
-            =============== ========= =======================
-            **Parameters**  **Type**   **Description**
-
-            *position*       float     The absolute position
-            =============== ========= =======================
-
-            See Also
-            --------
-            DAQ_Move_base.set_position_with_scaling
 
         """
         position = self.check_bound(self.current_position + position) - self.current_position
         self.target_position = position + self.current_position
-
         position = self.set_position_relative_with_scaling(position)
-
-        self.controller.MoveRelative(self.Generic.MotorDirection.Forward, self.Decimal(position), self.move_done_action)
-
+        self.controller.move_to(f'{position}deg', wait=False, move_type='rel')
         self.poll_moving()
 
     def move_Home(self):
         """
             Make the absolute move to original position (0).
         """
-        self.controller.Home(self.move_done_action)
+        self.target_position = 0.
+        self.controller.home()
+        self.poll_moving()
 
 
 if __name__ == '__main__':

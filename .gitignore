@@ -110,6 +110,6 @@ venv.bak/
 # pycharm
 .idea/
 .idea/*
-yacctab.py
-pymodaq_plugins_thorlabs/daq_viewer_plugins/plugins_2D/lextab.py
-lextab.py
+
+*yacctab.py
+*lextab.py
