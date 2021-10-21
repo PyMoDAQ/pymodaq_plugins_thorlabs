@@ -67,11 +67,16 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
             # kinesis_path=os.environ['Kinesis'] #environement variable pointing to 'C:\\Program Files\\Thorlabs\\Kinesis'
             # to be adjusted on the different computers
 
-            self.move_done_action = self.Action[self.UInt64](self.move_done)
+            self.move_done_action = self.Action[self.UInt64](self.move_done_here)
 
         except Exception as e:
             self.emit_status(ThreadCommand("Update_Status", [getLineInfo() + str(e), 'log']))
             raise Exception(getLineInfo() + str(e))
+
+    def move_done_here(self, pos_action):
+        print(f'posaction is {pos_action}')
+        position = self.check_position()
+        self.move_done(position)
 
     def commit_settings(self, param):
         """
@@ -217,7 +222,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
         position = self.set_position_with_scaling(position)
         self.controller.MoveTo(self.Decimal(position), self.move_done_action)
-        self.poll_moving()
+
 
     def move_Rel(self, position):
         """
@@ -243,7 +248,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
         self.controller.MoveRelative(self.Generic.MotorDirection.Forward, self.Decimal(position), self.move_done_action)
 
-        self.poll_moving()
+
 
     def move_Home(self):
         """
