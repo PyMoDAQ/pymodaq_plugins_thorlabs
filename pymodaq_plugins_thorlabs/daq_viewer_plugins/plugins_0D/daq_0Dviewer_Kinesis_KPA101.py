@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import QThread
+from qtpy.QtCore import QThread
 from easydict import EasyDict as edict
 from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
 from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base
@@ -14,7 +14,7 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
     """
         ==================== ========================
         **Attributes**        **Type**
-        *data_grabed_signal*  instance of pyqtSignal
+        *data_grabed_signal*  instance of Signal
         *VISA_rm*             ResourceManager
         *com_ports*           
         *params*              dictionnary list
