@@ -44,7 +44,7 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
 
     params = comon_parameters+[
             {'title': 'Kinesis library:', 'name': 'kinesis_lib', 'type': 'browsepath', 'value': kinesis_path},
-            {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'values': serialnumbers},
+            {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
             {'title': 'Device:', 'name': 'device_name', 'type': 'str', 'value': ''},
             {'title': 'Polling time (ms):', 'name': 'polling_time', 'type': 'int', 'value': 250},
             ]

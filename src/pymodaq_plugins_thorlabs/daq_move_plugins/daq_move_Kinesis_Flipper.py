@@ -52,11 +52,11 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
 
     params= [{'title': 'Kinesis library:', 'name': 'kinesis_lib', 'type': 'browsepath', 'value': Kinesis_path},
              {'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
-             {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'values':serialnumbers},
+             {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits':serialnumbers},
               {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group','visible':is_multiaxes, 'children':[
                         {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes, 'default': False},
-                        {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master', 'values': ['Master','Slave']},
-                        {'title': 'Axis:', 'name': 'axis', 'type': 'list',  'values':stage_names},
+                        {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master', 'limits': ['Master','Slave']},
+                        {'title': 'Axis:', 'name': 'axis', 'type': 'list',  'limits':stage_names},
                         
                         ]}]+comon_parameters
 

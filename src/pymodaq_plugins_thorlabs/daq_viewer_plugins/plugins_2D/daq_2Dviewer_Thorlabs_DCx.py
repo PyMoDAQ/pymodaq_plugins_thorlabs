@@ -35,7 +35,7 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         serial_numbers.append(camera.serial.decode("utf-8"))
 
     params = comon_parameters + [
-        {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'values': serial_numbers},
+        {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serial_numbers},
         {'title': 'Exposure (ms):', 'name': 'exposure', 'type': 'float', 'value': 9.},
     ]
 

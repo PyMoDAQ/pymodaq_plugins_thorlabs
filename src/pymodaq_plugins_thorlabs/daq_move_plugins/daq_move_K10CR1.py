@@ -39,13 +39,13 @@ class DAQ_Move_K10CR1(DAQ_Move_base):
     stage_names = []
 
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
-              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'values': serialnumbers},
+              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
               {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children': [
                   {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes,
                    'default': False},
                   {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master',
-                   'values': ['Master', 'Slave']},
-                  {'title': 'Axis:', 'name': 'axis', 'type': 'list', 'values': stage_names},
+                   'limits': ['Master', 'Slave']},
+                  {'title': 'Axis:', 'name': 'axis', 'type': 'list', 'limits': stage_names},
 
               ]}] + comon_parameters
 
