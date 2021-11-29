@@ -1,7 +1,7 @@
 import sys
 from qtpy.QtCore import QThread
 from easydict import EasyDict as edict
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlugins
 from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base
 from collections import OrderedDict
 import numpy as np
@@ -171,8 +171,10 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
         status = self.controller.Status
         data = [np.array([status.PositionDifference.X]), np.array([status.PositionDifference.Y])]
         data_intens = [np.array([status.Sum])]
-        self.data_grabed_signal.emit([OrderedDict(name='KPA101 Positions', data=data, type='Data0D', labels=['X (V)', 'Y (V)'],),
-                                      OrderedDict(name='KPA101 Intensity', data=data_intens, type='Data0D', labels=['Intensity'],)])
+        self.data_grabed_signal.emit([DataFromPlugins(name='KPA101 Positions', data=data, dim='Data0D',
+                                                      labels=['X (V)', 'Y (V)'],),
+                                      DataFromPlugins(name='KPA101 Intensity', data=data_intens, dim='Data0D',
+                                                      labels=['Intensity'],)])
 
 
     def stop(self):
