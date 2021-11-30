@@ -9,15 +9,14 @@ from pymodaq.daq_viewer.utility_classes import comon_parameters
 from pymodaq_plugins_thorlabs.hardware.powermeter import SimpleTLPM, DEVICE_NAMES
 
 
-class DAQ_0DViewer_ThorlabsPowermeter(DAQ_Viewer_base):
-
+class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
 
     _controller_units = 'W'
     devices = DEVICE_NAMES
 
     params = comon_parameters+[
             {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': devices},
-             {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': ''},
+             {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
             ]
 
     def __init__(self, parent=None, params_state=None):
@@ -48,8 +47,8 @@ class DAQ_0DViewer_ThorlabsPowermeter(DAQ_Viewer_base):
             else:
                 index = DEVICE_NAMES.index(self.settings['devices'])
                 self.controller = SimpleTLPM()
-                self.controller.open_by_index(index)
                 info = self.controller.infos.get_devices_info(index)
+                self.controller.open_by_index(index)
                 self.settings.child('info').setValue(str(info))
 
             self.status.initialized = True

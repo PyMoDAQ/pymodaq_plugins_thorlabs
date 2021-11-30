@@ -27,11 +27,6 @@ Installation:
   under the environment variable VXIPNPPATH or VXIPNPPATH64
   >>>import os
   >>>os.environ['VXIPNPPATH']
-
-* Make sure the path pointing to the correct dll is inside your system "Path" environment variable. If not add it manually:
-  C:\Program Files\IVI Foundation\VISA\Win64\Bin
-
-
 """
 
 import os
@@ -39,20 +34,23 @@ import sys
 import importlib
 from pathlib import Path
 import ctypes
-
-path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Example', 'Python')
-sys.path.insert(0, str(path_python_wrapper))
-from TLPM import TLPM
 from pymodaq.daq_utils import daq_utils as utils
 
-
 logger = utils.set_logger(utils.get_module_name(__file__))
-
-
 if utils.is_64bits():
-    path_dll = str(Path(os.environ['VXIPNPPATH64']).joinpath('Win64', 'Bin', 'TLPM_64.dll'))
+    path_dll = str(Path(os.environ['VXIPNPPATH64']).joinpath('Win64', 'Bin'))
 else:
-    path_dll = str(Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'Bin', 'TLPM_32.dll'))
+    path_dll = str(Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'Bin'))
+os.add_dll_directory(path_dll)
+
+try:
+    path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Example', 'Python')
+    sys.path.insert(0, str(path_python_wrapper))
+    from TLPM import TLPM
+except ModuleNotFoundError as e:
+    error = f"The *TLPM.py* python wrapper of thorlabs TLPM dll could not be located on your system. Check if present" \
+            f" in {path_dll}"
+    raise ModuleNotFoundError(error)
 
 
 class DeviceInfo:
@@ -65,13 +63,6 @@ class DeviceInfo:
     def __repr__(self):
         return f'Model: {self.model_name} / SN: {self.serial_number} by {self.manufacturer} is'\
                f' {"" if self.is_available else "not"} available'
-
-
-class TLPM(TLPM):
-    """subclass to load the dll from the full path as windows cannot see it??"""
-    def __init__(self):
-        self.dll = ctypes.cdll.LoadLibrary(path_dll)
-        self.devSession = ctypes.c_long(0)
 
 
 class GetInfos:
@@ -116,7 +107,6 @@ class GetInfos:
             logger.exception(str(e))
             return DeviceInfo()
 
-        
 
 infos = GetInfos()
 Ndevices = infos.get_connected_ressources_number()
