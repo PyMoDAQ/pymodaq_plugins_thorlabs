@@ -10,7 +10,8 @@ pymodaq_plugins_thorlabs (Thorlabs Instruments)
    :alt: Documentation Status
 
 .. image:: https://github.com/CEMES-CNRS/pymodaq_plugins_thorlabs/workflows/Upload%20Python%20Package/badge.svg
-    :target: https://github.com/CEMES-CNRS/pymodaq_plugins_thorlabs
+   :target: https://github.com/CEMES-CNRS/pymodaq_plugins_thorlabs
+   :alt: Publication Status
 
 Set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10CR1 (stepper rotation actuator), Kinesis Flipper,
 Kinesis KSP100, Camera DCx, Powermeters using the TLPM library)
