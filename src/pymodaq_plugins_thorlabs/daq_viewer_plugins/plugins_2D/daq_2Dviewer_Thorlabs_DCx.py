@@ -4,6 +4,9 @@ from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlug
 from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, comon_parameters, main
 from instrumental import instrument, list_instruments, Q_
 
+#This is a (probably bad) way of importing the stuff needed to get exposure range
+import instrumental.drivers.cameras.uc480 as uc480module
+
 class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
     """This plugin is intended for Thorlabs DCx cameras series.
         It should not be compatible with Thorlabs scientific cameras.
@@ -51,7 +54,7 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         """
         """
         if param.name() == 'exposure':
-            self.controller.exposure = Q_(param.value(), 'ms')
+            self.controller._set_exposure(Q_(param.value(), 'ms'))
             self.settings.child('exposure').setValue(self.controller.exposure.m_as('ms'))
 
     def ini_detector(self, controller=None):
@@ -88,9 +91,15 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
                         selected_camera = camera
 
                 self.controller = selected_camera
-                self.settings.child('exposure').setValue(self.controller.exposure.m_as('ms'))
-                self.settings.child('exposure').setOpts(
-                    limits=[exp.m_as('ms') for exp in self.controller._get_exposure_range()])
+                self.settings.child('exposure').setValue(self.controller._get_exposure().m_as('ms'))
+
+                #Getting the range of exposure possible. I think it changes with other settings of the camera so it's
+                #probably not ideal to set it like this. The two _dev calls are needed because instrumental does not
+                #natively exposes these parameters like it does e.g. for _get_exposure()
+
+                rangemin = self.controller._dev.Exposure(uc480module.lib.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MIN)
+                rangemax = self.controller._dev.Exposure(uc480module.lib.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MAX)
+                self.settings.child('exposure').setOpts(limits=[rangemin,rangemax])
 
 
             self.status.info = "Detector initialized"
