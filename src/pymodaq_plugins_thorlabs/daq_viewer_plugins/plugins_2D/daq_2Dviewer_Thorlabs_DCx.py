@@ -1,11 +1,11 @@
-import numpy as np
 from easydict import EasyDict as edict
 from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlugins, Axis
 from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, comon_parameters, main
 from instrumental import instrument, list_instruments, Q_
 
-#This is a (probably bad) way of importing the stuff needed to get exposure range
+# This is a (probably bad) way of importing the stuff needed to get exposure range
 import instrumental.drivers.cameras.uc480 as uc480module
+
 
 class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
     """This plugin is intended for Thorlabs DCx cameras series.
@@ -39,7 +39,11 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
 
     params = comon_parameters + [
         {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serial_numbers},
-        {'title': 'Exposure (ms):', 'name': 'exposure', 'type': 'float', 'value': 9.},
+        {'title': 'Exposure (ms):', 'name': 'exposure', 'type': 'float', 'value': 0},
+        {'title': 'Gain:', 'name': 'master_gain', 'type': 'int', 'value': 0, "limits": [0, 100]},
+        {'title': 'Gain Boost:', 'name': 'gain_boost', 'type': 'bool', 'value': False},
+        {'title': 'gamma', 'name': 'gamma', 'type': 'int', 'value': 0},
+        {'title': 'Color Mode', 'name': 'colormode', 'type': 'str', 'value': 'mono8', "readonly": True},
     ]
 
     def __init__(self, parent=None, params_state=None):
@@ -54,8 +58,13 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         """
         """
         if param.name() == 'exposure':
+            # For some reason exposure is dealt specially in the instrumental lib
             self.controller._set_exposure(Q_(param.value(), 'ms'))
-            self.settings.child('exposure').setValue(self.controller.exposure.m_as('ms'))
+            self.settings.child('exposure').setValue(self.controller._get_exposure().m_as('ms'))
+        elif param.name() in ['master_gain', 'gain_boost', 'gamma']:
+            # All settings without units can be dealt as a single case
+            setattr(self.controller, param.name(), param.value())
+            self.settings.child(param.name()).setValue(getattr(self.controller, param.name()))
 
     def ini_detector(self, controller=None):
         """Detector communication initialization
@@ -91,16 +100,21 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
                         selected_camera = camera
 
                 self.controller = selected_camera
-                self.settings.child('exposure').setValue(self.controller._get_exposure().m_as('ms'))
 
-                #Getting the range of exposure possible. I think it changes with other settings of the camera so it's
-                #probably not ideal to set it like this. The two _dev calls are needed because instrumental does not
-                #natively exposes these parameters like it does e.g. for _get_exposure()
+                # Getting the current settings from the instrument.
+                # Exposure is weird
+                self.settings.child('exposure').setValue(self.controller._get_exposure().m_as('ms'))
+                for paraname in ['master_gain', 'gain_boost', 'gamma']:
+                    paramvalue = getattr(self.controller, paraname)
+                    self.settings.child(paraname).setValue(paramvalue)
+
+                # Getting the range of exposure possible. I think it changes with other settings of the camera so it's
+                # probably not ideal to set it like this. The _dev calls are needed because instrumental does not
+                # natively exposes these parameters like it does e.g. for _get_exposure()
 
                 rangemin = self.controller._dev.Exposure(uc480module.lib.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MIN)
                 rangemax = self.controller._dev.Exposure(uc480module.lib.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MAX)
-                self.settings.child('exposure').setOpts(limits=[rangemin,rangemax])
-
+                self.settings.child('exposure').setOpts(limits=[rangemin, rangemax])
 
             self.status.info = "Detector initialized"
             self.status.initialized = True
@@ -127,15 +141,20 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         Naverage: (int) Number of hardware averaging
         kwargs: (dict) of others optionals arguments
         """
-        data = self.controller.grab_image(exposure_time=Q_(self.settings.child('exposure').value(), 'ms'))
+        #The instrumental library seems really broken AF unfortunately so I have to use this to acquire a frame otherwise
+        #it just uses the default values...
+        kwds = {'exposure_time': Q_(self.settings.child('exposure').value(), 'ms'),
+                'gain': self.settings.child('master_gain').value()}
+
+        data =self.controller.grab_image(**kwds)
+        # data = self.controller.grab_image(exposure_time=Q_(self.settings.child('exposure').value(), 'ms'))
         self.data_grabed_signal.emit([DataFromPlugins(name='Thorcam', data=[data],
                                                       dim='Data2D')])
 
     def stop(self):
 
         self.controller.stop_live_video()
-        #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
-
+        # self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
         return ''
 
 
