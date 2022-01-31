@@ -53,12 +53,13 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
     params= [{'title': 'Kinesis library:', 'name': 'kinesis_lib', 'type': 'browsepath', 'value': Kinesis_path},
              {'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits':serialnumbers},
-              {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group','visible':is_multiaxes, 'children':[
+             {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group','visible':is_multiaxes, 'children':[
                         {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes, 'default': False},
                         {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master', 'limits': ['Master','Slave']},
                         {'title': 'Axis:', 'name': 'axis', 'type': 'list',  'limits':stage_names},
-                        
-                        ]}]+comon_parameters
+                        ]
+              }
+             ]+comon_parameters
 
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
@@ -144,8 +145,8 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
                     self.controller=controller
             else: #Master stage
                
-                self.Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers=self.Device.DeviceManagerCLI.GetDeviceList(self.Flipper.FilterFlipper.DevicePrefix)
+                Device.DeviceManagerCLI.BuildDeviceList()
+                serialnumbers= Device.DeviceManagerCLI.GetDeviceList(self.Flipper.FilterFlipper.DevicePrefix)
                 ser_bool=serialnumbers.Contains(self.settings.child(('serial_number')).value())
                 if ser_bool:
                     self.controller=self.Flipper.FilterFlipper.CreateFilterFlipper(self.settings.child(('serial_number')).value())
@@ -161,11 +162,10 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
             if not(self.controller.IsSettingsInitialized()):
                 raise(Exception("no Stage Connected"))
 
-            self.status.info=info
-            self.status.controller=self.controller
-            self.status.initialized=True
+            self.status.info = info
+            self.status.controller = self.controller
+            self.status.initialized = True
             return self.status
-
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
