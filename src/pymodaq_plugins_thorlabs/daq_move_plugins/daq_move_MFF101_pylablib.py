@@ -54,8 +54,6 @@ class DAQ_Move_MFF101_pylablib(DAQ_Move_base):
         self.settings.child('scaling','offset').setValue(0)
         self.settings.child('scaling','offset').setReadonly()
 
-        self.settings.child('')
-
     def commit_settings(self,param):
         """
             | Activate any parameter changes on the hardware.
