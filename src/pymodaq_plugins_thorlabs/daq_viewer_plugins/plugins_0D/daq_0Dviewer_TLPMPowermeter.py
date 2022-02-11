@@ -6,7 +6,7 @@ from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, main
 from collections import OrderedDict
 import numpy as np
 from pymodaq.daq_viewer.utility_classes import comon_parameters
-from pymodaq_plugins_thorlabs.hardware.powermeter import SimpleTLPM, DEVICE_NAMES
+from pymodaq_plugins_thorlabs.hardware.powermeter import CustomTLPM, DEVICE_NAMES
 
 
 class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
@@ -14,10 +14,11 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
     _controller_units = 'W'
     devices = DEVICE_NAMES
 
-    params = comon_parameters+[
-            {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': devices},
-             {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
-            ]
+    params = comon_parameters + [
+        {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': devices},
+        {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
+        {'title': 'Wavelength:', 'name': 'wavelength', 'type': 'float', 'value': 532.,},
+        ]
 
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
@@ -46,10 +47,14 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
                     self.controller = controller
             else:
                 index = DEVICE_NAMES.index(self.settings['devices'])
-                self.controller = SimpleTLPM()
+                self.controller = CustomTLPM()
                 info = self.controller.infos.get_devices_info(index)
                 self.controller.open_by_index(index)
                 self.settings.child('info').setValue(str(info))
+
+            self.settings.child('wavelength').setOpts(limits=self.controller.wavelength_range)
+            self.controller.wavelength = self.settings.child('wavelength').value()
+            self.settings.child('wavelength').setValue(self.controller.wavelength)
 
             self.status.initialized = True
             self.status.controller = self.controller
@@ -66,7 +71,9 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
     def commit_settings(self, param):
         """
         """
-        pass
+        if param.name() == 'wavelength':
+            self.controller.wavelength = self.settings.child('wavelength').value()
+            self.settings.child('wavelength').setValue(self.controller.wavelength)
 
     def close(self):
         """
@@ -86,7 +93,7 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
             =============== ======== ===============================================
         """
         data = [np.array([self.controller.get_power()])]
-        self.data_grabed_signal.emit([DataFromPlugins(name='KPA101 Positions', data=data,
+        self.data_grabed_signal.emit([DataFromPlugins(name='Powermeter', data=data,
                                                       dim='Data0D', labels=['Power (W)'],)])
 
 

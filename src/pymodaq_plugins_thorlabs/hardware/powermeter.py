@@ -34,6 +34,8 @@ import sys
 import importlib
 from pathlib import Path
 import ctypes
+import functools
+
 from pymodaq.daq_utils import daq_utils as utils
 
 logger = utils.set_logger(utils.get_module_name(__file__))
@@ -46,11 +48,26 @@ os.add_dll_directory(path_dll)
 try:
     path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Example', 'Python')
     sys.path.insert(0, str(path_python_wrapper))
-    from TLPM import TLPM
+    import TLPM
 except ModuleNotFoundError as e:
     error = f"The *TLPM.py* python wrapper of thorlabs TLPM dll could not be located on your system. Check if present" \
             f" in {path_dll}"
     raise ModuleNotFoundError(error)
+
+
+def error_handling(default_arg=None):
+    """decorator around TLPM functions to handle return if errors"""
+    def error_management(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                ret = func(*args, **kwargs)
+                return ret
+            except Exception as e:
+                logger.exception(f'The function {func.__name__} returned the error: {e}')
+                return default_arg
+        return wrapper
+    return error_management
 
 
 class DeviceInfo:
@@ -68,19 +85,16 @@ class DeviceInfo:
 class GetInfos:
     def __init__(self, tlpm=None):
         if tlpm is None:
-            tlpm = TLPM()
+            tlpm = TLPM.TLPM()
         self._tlpm = tlpm
         self._Ndevices = 0
 
+    @error_handling(0)
     def get_connected_ressources_number(self):
         deviceCount = ctypes.c_uint32()
-        try:
-            self._tlpm.findRsrc(ctypes.byref(deviceCount))
-            self._Ndevices = deviceCount.value
-        except NameError as e:
-            logger.exception(str(e))
-        finally:
-            return self._Ndevices
+        self._tlpm.findRsrc(ctypes.byref(deviceCount))
+        self._Ndevices = deviceCount.value
+        return self._Ndevices
 
     def get_devices_name(self):
         self.get_connected_ressources_number()
@@ -91,6 +105,7 @@ class GetInfos:
             names.append(resource_name.value.decode())
         return names
 
+    @error_handling(DeviceInfo())
     def get_devices_info(self, index: int):
         self.get_connected_ressources_number()
         if index >= self._Ndevices:
@@ -99,13 +114,9 @@ class GetInfos:
         serialNumber = ctypes.create_string_buffer(1024)
         manufacturer = ctypes.create_string_buffer(1024)
         is_available = ctypes.c_int16()
-        try:
-            self._tlpm.getRsrcInfo(index, modelName, serialNumber, manufacturer, ctypes.byref(is_available))
-            return DeviceInfo(modelName.value.decode(), serialNumber.value.decode(),
-                              manufacturer.value.decode(), bool(is_available.value))
-        except NameError as e:
-            logger.exception(str(e))
-            return DeviceInfo()
+        self._tlpm.getRsrcInfo(index, modelName, serialNumber, manufacturer, ctypes.byref(is_available))
+        return DeviceInfo(modelName.value.decode(), serialNumber.value.decode(),
+                          manufacturer.value.decode(), bool(is_available.value))
 
 
 infos = GetInfos()
@@ -113,11 +124,11 @@ Ndevices = infos.get_connected_ressources_number()
 DEVICE_NAMES = infos.get_devices_name()
 
 
-class SimpleTLPM:
+class CustomTLPM:
     def __init__(self, index=None):
         super().__init__()
         self._index = index
-        self._tlpm = TLPM()
+        self._tlpm = TLPM.TLPM()
         self.infos = GetInfos(self._tlpm)
 
     def __enter__(self):
@@ -134,45 +145,61 @@ class SimpleTLPM:
         device_name = self.infos.get_devices_name()[self._index]
         self.open(device_name)
 
+    @error_handling(False)
     def open(self, resource_name: str, id_query=True, reset=True):
         resource = ctypes.create_string_buffer(1024)
         resource.value = resource_name.encode()
         id_query = ctypes.c_bool(id_query)
         reset = ctypes.c_bool(reset)
-        try:
-            self._tlpm.open(resource, id_query, reset)
-            return True
-        except NameError as e:
-            logger.exception(str(e))
-            return False
+        self._tlpm.open(resource, id_query, reset)
+        return True
 
+    @error_handling()
     def close(self):
         self._tlpm.close()
 
+    @error_handling('')
     def get_calibration(self):
         message = ctypes.create_string_buffer(1024)
-        try:
-            self._tlpm.getCalibrationMsg(message)
-            return message.value.decode()
-        except NameError as e:
-            logger.exception(str(e))
-            return ''
+        self._tlpm.getCalibrationMsg(message)
+        return message.value.decode()
 
+    @error_handling(0.)
     def get_power(self):
         power = ctypes.c_double()
-        try:
-            self._tlpm.measPower(ctypes.byref(power))
-            return power.value
-        except NameError as e:
-            logger.exception(str(e))
-            return 0.
+        self._tlpm.measPower(ctypes.byref(power))
+        return power.value
+
+    @property
+    @error_handling((500, 800))
+    def wavelength_range(self):
+        wavelength_min = ctypes.c_double()
+        wavelength_max = ctypes.c_double()
+
+        self._tlpm.getWavelength(TLPM.TLPM_ATTR_MIN_VAL, ctypes.byref(wavelength_min))
+        self._tlpm.getWavelength(TLPM.TLPM_ATTR_MAX_VAL, ctypes.byref(wavelength_max))
+        return wavelength_min.value, wavelength_max.value
+
+    @property
+    @error_handling(-1)
+    def wavelength(self):
+        wavelength = ctypes.c_double()
+        self._tlpm.getWavelength(TLPM.TLPM_ATTR_SET_VAL, ctypes.byref(wavelength))
+        return wavelength.value
+
+    @wavelength.setter
+    @error_handling()
+    def wavelength(self, wavelength: float):
+        wavelength = ctypes.c_double(wavelength)
+        self._tlpm.setWavelength(wavelength)
 
 
 if __name__ == '__main__':
     print(Ndevices)
     print(DEVICE_NAMES)
 
-    with SimpleTLPM(0) as tlpm:
+    with CustomTLPM(0) as tlpm:
+        tlpm.wavelength
         tlpm.get_power()
 
 
