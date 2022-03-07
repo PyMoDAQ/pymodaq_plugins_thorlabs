@@ -39,6 +39,8 @@ Viewer0D
 
 * **Kinesis_KPA101**: Kinesis serie (position sensitive photodetector)
 * **TLPMPowermeter**: TLPM dll compatible series (PM101x, PM102x, PM103x, PM100USB, PM16-Series, PM160, PM400, PM100A, PM100D, PM200)
+* **TLPMPowermeterInst**: TLPM dll compatible series (PM101x, PM102x, PM103x, PM100USB, PM16-Series, PM160, PM400, PM100A, PM100D, PM200)
+  using the Instrumental-lib package (recommended)
 
 Viewer2D
 ++++++++

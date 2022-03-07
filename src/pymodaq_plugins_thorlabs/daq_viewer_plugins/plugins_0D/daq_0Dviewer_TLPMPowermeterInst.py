@@ -13,11 +13,8 @@ The installation should create (following the manual) an environment variable ca
 VXIPNPPATH depending on your platform (32 or 64 bits) pointing to where the TLPM library is
 (usually C:\Program Files\IVI Foundation\VISA)
 
-This plugin is making use of the TLPM.py script provided by thorlabs. An alternative is to use the TLPMPowermeterInst
-plugin using the Instrumental_lib package directly interfacing the C library with the nice Instrument wrapper
+This plugin is using the Instrumental_lib package directly interfacing the C library with the nice **instrument** wrapper
 """
-
-
 import sys
 from qtpy.QtCore import QThread
 from easydict import EasyDict as edict
@@ -26,18 +23,22 @@ from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, main
 from collections import OrderedDict
 import numpy as np
 from pymodaq.daq_viewer.utility_classes import comon_parameters
-from pymodaq_plugins_thorlabs.hardware.powermeter import CustomTLPM, DEVICE_NAMES
+
+from instrumental import list_instruments, instrument
+
+psets = list_instruments(module='powermeters.thorlabs_tlpm')
+
+DEVICES = [f"{pset['model']}/{pset['serial']}" for pset in psets]
 
 
-class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
+class DAQ_0DViewer_TLPMPowermeterInst(DAQ_Viewer_base):
 
     _controller_units = 'W'
-    devices = DEVICE_NAMES
 
     params = comon_parameters + [
-        {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': devices},
+        {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': DEVICES},
         {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
-        {'title': 'Wavelength:', 'name': 'wavelength', 'type': 'float', 'value': 532.,},
+        {'title': 'Wavelength:', 'name': 'wavelength', 'type': 'float', 'value': 532., 'suffix': 'nm'},
         ]
 
     def __init__(self, parent=None, params_state=None):
@@ -66,15 +67,16 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
                 else:
                     self.controller = controller
             else:
-                index = DEVICE_NAMES.index(self.settings['devices'])
-                self.controller = CustomTLPM()
-                info = self.controller.infos.get_devices_info(index)
-                self.controller.open_by_index(index)
+
+                self.controller = instrument(psets[DEVICES.index(self.settings['devices'])])
+                self.controller.power_unit = self._controller_units
+                info = self.controller.get_device_info()
+
                 self.settings.child('info').setValue(str(info))
 
-            self.settings.child('wavelength').setOpts(limits=self.controller.wavelength_range)
-            self.controller.wavelength = self.settings.child('wavelength').value()
-            self.settings.child('wavelength').setValue(self.controller.wavelength)
+            self.settings.child('wavelength').setOpts(
+                limits=[wrange.magnitude for wrange in self.controller.get_wavelength_range()])
+            self.settings.child('wavelength').setValue(self.controller.wavelength.magnitude)
 
             self.status.initialized = True
             self.status.controller = self.controller
@@ -112,8 +114,8 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
             *Naverage*      int       Number of values to average
             =============== ======== ===============================================
         """
-        data = [np.array([self.controller.get_power()])]
-        self.data_grabed_signal.emit([DataFromPlugins(name='Powermeter', data=data,
+        data = np.array([np.mean([self.controller.get_power().magnitude for ind in range(Naverage)])])
+        self.data_grabed_signal.emit([DataFromPlugins(name='Powermeter', data=[data],
                                                       dim='Data0D', labels=['Power (W)'],)])
 
 
