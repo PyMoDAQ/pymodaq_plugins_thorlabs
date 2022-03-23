@@ -34,7 +34,6 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
               }
              ]+comon_parameters
 
-
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
         self.settings.child('epsilon').setValue(0.005)
@@ -76,7 +75,6 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
                 self.controller.home(force=True, timeout=self.settings.child('timeout').value())
                 self.check_position()
                 self.settings.child('reset_home').setValue(False)
-
 
     def ini_stage(self,controller=None):
         """Initialize the controller and stages (axes) with given parameters.
@@ -198,21 +196,12 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
 
         """
         position = self.check_bound(position)
-        # superfluous because there is no scaling for a flipper
-        # position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
-
-        # pos = self.check_position()
-        # if pos == 0:
-        #     position = 1
-        # else:
-        #     position = 0
 
         self.controller.move_to(position)
         self.emit_status(ThreadCommand('Update_Status', [f'Moving to position: {position}']))
 
         self.target_position = position
         self.poll_moving()
-
 
     def move_Rel(self,position):
         """ Move the actuator to the relative target actuator value defined by position
@@ -229,7 +218,6 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         self.controller.move_to(new_pos)
         self.emit_status(ThreadCommand('Update_Status', [f'Moving to position: {position}']))
         self.poll_moving()
-
 
     def move_Home(self):
         """
