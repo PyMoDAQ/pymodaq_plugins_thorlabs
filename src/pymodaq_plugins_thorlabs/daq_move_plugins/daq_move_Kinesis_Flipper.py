@@ -145,8 +145,9 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
             else: #Master stage
                
                 self.Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers=self.Device.DeviceManagerCLI.GetDeviceList(self.Flipper.FilterFlipper.DevicePrefix)
-                ser_bool=serialnumbers.Contains(self.settings.child(('serial_number')).value())
+                serialnumbers = self.Device.DeviceManagerCLI.GetDeviceList(self.Flipper.FilterFlipper.DevicePrefix)
+                #Check if the serial number in the parameters exists in the available devices
+                ser_bool = self.settings.child(('serial_number')).value() in serialnumbers
                 if ser_bool:
                     self.controller=self.Flipper.FilterFlipper.CreateFilterFlipper(self.settings.child(('serial_number')).value())
                     self.controller.Connect(self.settings.child(('serial_number')).value())
@@ -161,11 +162,10 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
             if not(self.controller.IsSettingsInitialized()):
                 raise(Exception("no Stage Connected"))
 
-            self.status.info=info
-            self.status.controller=self.controller
-            self.status.initialized=True
+            self.status.info = info
+            self.status.controller = self.controller
+            self.status.initialized = True
             return self.status
-
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
@@ -177,8 +177,8 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
         """
             close the current instance of Kinesis Flipper instrument.
         """
-        self.controller.StopPolling();
-        self.controller.Disconnect();
+        self.controller.StopPolling()
+        self.controller.Disconnect()
         self.controller.Dispose()
         self.controller=None
 
@@ -219,7 +219,7 @@ class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
             DAQ_Move_base.set_position_with_scaling
 
         """
-        pos = self.Check_position()
+        pos = self.check_position()
         if int(pos) == 1:
             position = 2
         else:
