@@ -22,6 +22,7 @@ Authors
 
 * Sebastien J. Weber
 * David Bresteau (david.bresteau@cea.fr)
+* Nicolas Tappy (nicolas.tappy@epfl.ch)
 
 Instruments
 ===========
@@ -33,6 +34,8 @@ Actuators
 
 * **Kinesis**: Kinesis serie (tested on K10CR1)
 * **Kinesis_Flipper**: Kinesis serie Flipper
+* **MFF101_pylablib**: Kinesis serie Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
+* **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module.
 
 Viewer0D
 ++++++++
