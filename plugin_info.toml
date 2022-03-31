@@ -11,5 +11,4 @@ license = 'MIT'
 
 [plugin-install]
 #packages required for your plugin:
-packages-required = ['pythonnet', 'pywin32', 'instrumental-lib>=0.6', 'nicelib']
-##
+packages-required = ['pythonnet', 'pywin32', 'instrumental-lib>=0.6', 'nicelib', 'pylablib']
