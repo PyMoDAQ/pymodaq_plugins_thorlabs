@@ -158,6 +158,54 @@ class SimpleTLPM:
             logger.exception(str(e))
             return ''
 
+
+    def set_current_wavelength(self, wl_nm):
+        """Set the current wavelength in the detected by the powermeter"""
+        wl = ctypes.c_double(wl_nm)
+        try:
+            self._tlpm.setWavelength(wl)
+        except NameError as e:
+            logger.exception(str(e))
+
+    def get_min_wavelength(self):
+        """Get the minimum wavelength available for measurement in nm"""
+        at = ctypes.c_int16(1)  # 1 is code for minimum wavelength
+        wl = ctypes.c_double(0.0)  # Passed by ref to get wavelength
+        try:
+            er = self._tlpm.getWavelength(at,ctypes.byref(wl))
+            if er == 0:
+                return wl.value
+        except NameError as e:
+            logger.exception(str(e))
+            return 0.0
+
+
+    def get_max_wavelength(self):
+        """Get the maximum wavelength available for measurement in nm"""
+        at = ctypes.c_int16(2)  # 2 is code for maximum wavelength
+        wl = ctypes.c_double(0.0)  # Passed by ref to get wavelength
+        try:
+            er = self._tlpm.getWavelength(at,ctypes.byref(wl))
+            if er == 0:
+                return wl.value
+        except NameError as e:
+            logger.exception(str(e))
+            return 0.0
+
+
+    def get_current_wavelength(self):
+        """Get the current wavelength set for measuring power"""
+        at = ctypes.c_int16(0)  # 0 is code for current wavelength
+        wl = ctypes.c_double(0.0)  # Passed by ref to get wavelength
+        try:
+            er = self._tlpm.getWavelength(at,ctypes.byref(wl))
+            if er == 0:
+                return wl.value
+        except NameError as e:
+            logger.exception(str(e))
+            return 0.0
+
+
     def get_power(self):
         power = ctypes.c_double()
         try:

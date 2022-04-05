@@ -16,7 +16,8 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
 
     params = comon_parameters+[
             {'title': 'Devices:', 'name': 'devices', 'type': 'list', 'limits': devices},
-             {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
+            {'title': 'Info:', 'name': 'info', 'type': 'str', 'value': '', 'readonly': True},
+            {'title': 'Wavelength (nm)', 'name': 'wavelength', 'type': 'float', 'value': 0.0},
             ]
 
     def __init__(self, parent=None, params_state=None):
@@ -51,6 +52,12 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
                 self.controller.open_by_index(index)
                 self.settings.child('info').setValue(str(info))
 
+            setwl = self.controller.get_current_wavelength()
+            minwl = self.controller.get_min_wavelength()
+            maxwl = self.controller.get_max_wavelength()
+            self.settings.child('wavelength').setValue(setwl)
+            self.settings.child('wavelength').setLimits([minwl, maxwl])
+
             self.status.initialized = True
             self.status.controller = self.controller
             self.status.info = str(info)
@@ -66,7 +73,10 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
     def commit_settings(self, param):
         """
         """
-        pass
+        if param.name() == 'wavelength':
+            self.controller.set_current_wavelength(param.value())
+        else:
+            pass
 
     def close(self):
         """
