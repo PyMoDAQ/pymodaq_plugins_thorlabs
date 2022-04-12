@@ -11,4 +11,5 @@ license = 'MIT'
 
 [plugin-install]
 #packages required for your plugin:
-packages-required = ['pythonnet', 'pywin32', 'instrumental-lib>=0.6', 'nicelib', 'pylablib']
+packages-required = ["pythonnet", "pywin32", "nicelib", "instrumental-lib @ https://github.com/CEMES-CNRS/Instrumental/archive/refs/tags/cemes.0.6.tar.gz"]
+
