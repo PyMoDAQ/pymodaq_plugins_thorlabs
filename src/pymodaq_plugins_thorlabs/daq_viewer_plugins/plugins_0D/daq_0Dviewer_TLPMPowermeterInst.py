@@ -24,7 +24,7 @@ from collections import OrderedDict
 import numpy as np
 from pymodaq.daq_viewer.utility_classes import comon_parameters
 
-from instrumental import list_instruments, instrument
+from instrumental import list_instruments, instrument, Q_
 
 psets = list_instruments(module='powermeters.thorlabs_tlpm')
 
@@ -94,8 +94,8 @@ class DAQ_0DViewer_TLPMPowermeterInst(DAQ_Viewer_base):
         """
         """
         if param.name() == 'wavelength':
-            self.controller.wavelength = self.settings.child('wavelength').value()
-            self.settings.child('wavelength').setValue(self.controller.wavelength)
+            self.controller.wavelength = Q_(self.settings.child('wavelength').value(), 'nm')
+            self.settings.child('wavelength').setValue(self.controller.wavelength.m_as('nm'))
 
     def close(self):
         """
