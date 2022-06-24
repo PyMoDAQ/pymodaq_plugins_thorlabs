@@ -171,7 +171,7 @@ class DAQ_Move_K10CR1(DAQ_Move_base):
         self.target_position = position
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_to(f'{position}deg', wait=False, move_type='abs')
+        self.controller.move_to(f'{position}deg', wait=False)
         self.poll_moving()
 
     def move_Rel(self, position):
@@ -181,7 +181,7 @@ class DAQ_Move_K10CR1(DAQ_Move_base):
         position = self.check_bound(self.current_position + position) - self.current_position
         self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
-        self.controller.move_to(f'{position}deg', wait=False, move_type='rel')
+        self.controller.move_relative(f'{position}deg', wait=False)
         self.poll_moving()
 
     def move_Home(self):
