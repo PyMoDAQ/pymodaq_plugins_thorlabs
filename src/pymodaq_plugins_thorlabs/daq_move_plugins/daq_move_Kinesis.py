@@ -1,5 +1,5 @@
-from pymodaq.daq_move.utility_classes import DAQ_Move_base, main
-from pymodaq.daq_move.utility_classes import comon_parameters
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
+from pymodaq.control_modules.move_utility_classes import comon_parameters
 from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, set_logger, get_module_name
 import clr
 from qtpy import QtWidgets
