@@ -26,8 +26,8 @@ from pymodaq.daq_viewer.utility_classes import comon_parameters
 
 from instrumental import list_instruments, instrument, Q_
 
-psets = list_instruments(module='powermeters.thorlabs_tlpm')
 
+psets = list_instruments(module='powermeters.thorlabs_tlpm')
 DEVICES = [f"{pset['model']}/{pset['serial']}" for pset in psets]
 
 
@@ -44,51 +44,19 @@ class DAQ_0DViewer_TLPMPowermeterInst(DAQ_Viewer_base):
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
 
-
     def ini_detector(self, controller=None):
-        """
-            Initialisation procedure of the detector.
+        self.controller = self.ini_detector_init(controller, instrument(psets[DEVICES.index(self.settings['devices'])]))
+        self.controller.power_unit = self._controller_units
 
-            Returns
-            -------
+        info = str(self.controller.get_device_info())
 
-                The initialized status.
+        self.settings.child('info').setValue(str(info))
+        self.settings.child('wavelength').setOpts(
+            limits=[wrange.magnitude for wrange in self.controller.get_wavelength_range()])
+        self.settings.child('wavelength').setValue(self.controller.wavelength.magnitude)
 
-            See Also
-            --------
-            daq_utils.ThreadCommand
-        """
-        self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
-        try:
-
-            if self.settings.child(('controller_status')).value() == "Slave":
-                if controller is None:
-                    raise Exception('no controller has been defined externally while this detector is a slave one')
-                else:
-                    self.controller = controller
-            else:
-
-                self.controller = instrument(psets[DEVICES.index(self.settings['devices'])])
-                self.controller.power_unit = self._controller_units
-                info = self.controller.get_device_info()
-
-                self.settings.child('info').setValue(str(info))
-
-            self.settings.child('wavelength').setOpts(
-                limits=[wrange.magnitude for wrange in self.controller.get_wavelength_range()])
-            self.settings.child('wavelength').setValue(self.controller.wavelength.magnitude)
-
-            self.status.initialized = True
-            self.status.controller = self.controller
-            self.status.info = str(info)
-            return self.status
-
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [getLineInfo() + str(e), 'log']))
-            self.status.info = getLineInfo() + str(e)
-            self.status.initialized = False
-            return self.status
-
+        initialized = True
+        return info, initialized
 
     def commit_settings(self, param):
         """
