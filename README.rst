@@ -23,6 +23,8 @@ Authors
 * Sebastien J. Weber
 * David Bresteau (david.bresteau@cea.fr)
 * Nicolas Tappy (nicolas.tappy@epfl.ch)
+* Tom Radford (T.radford@soton.ac.uk)
+* Luke Burke (lb19g16@soton.ac.uk)
 
 Instruments
 ===========
@@ -33,6 +35,7 @@ Actuators
 +++++++++
 
 * **Kinesis**: Kinesis serie (tested on K10CR1)
+* **Kinesis**: Kenisis KDC101 K-cube Brushed DC servo motor controller
 * **Kinesis_Flipper**: Kinesis serie Flipper
 * **MFF101_pylablib**: Kinesis serie Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
