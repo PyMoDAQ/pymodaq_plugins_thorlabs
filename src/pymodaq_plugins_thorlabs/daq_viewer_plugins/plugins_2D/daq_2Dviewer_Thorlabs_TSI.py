@@ -11,8 +11,16 @@ from time import perf_counter
 
 class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     """
-    Plugin for Thorlabs scientific sCMOS cameras such as Kiralux or Zelux. It has been tested with Thorlabs Zelux camera.
-    Building on pylablib driver
+    Plugin for Thorlabs scientific sCMOS cameras such as Kiralux or Zelux. It has been tested with Thorlabs Zelux camera on Windows.
+    Building on pylablib driver, information about it can be found here : https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html
+
+    As in pylablib, the plugin will look for DLLs in the default Thorcam installation folder. Specifying a custom DLL folder is not implemented yet.
+
+    The plugin provides binning functionality as well as ROI (region of interest) selection, which are on handled the hardware side.
+    To use ROIs, click on "Show/Hide ROI selection area" in the viewer panel (icon with dashed rectangle).
+    Position the rectangle as you wish, either with mouse or by entering coordinates, then click "Update ROI" button.
+
+    The "Clear ROI+Bin" button resets to default cameras parameters: no binning and full frame.
     """
 
     serialnumbers = Thorlabs.list_cameras_tlcam()
@@ -121,8 +129,11 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
             False if initialization failed otherwise True
         """
         # Initialize camera class
-        self.ini_detector_init(old_controller=controller,
-                               new_controller=Thorlabs.ThorlabsTLCamera(self.settings.child('serial_number').value()))
+        if not self.settings.child('serial_number').value() == '':
+            self.ini_detector_init(old_controller=controller,
+                                   new_controller=Thorlabs.ThorlabsTLCamera(self.settings.child('serial_number').value()))
+        else:
+            raise Exception('No compatible Thorlabs scientific camera was found.')
 
         # Get camera name
         self.settings.child('camera_name').setValue(self.controller.get_device_info().name)
