@@ -6,7 +6,7 @@ from pymodaq.daq_utils.parameter import Parameter
 from pylablib.devices import Thorlabs
 from qtpy import QtWidgets, QtCore
 import numpy as np
-from time import time
+from time import perf_counter
 
 
 class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
@@ -248,7 +248,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
             self.emit_status(ThreadCommand('Update_Status', [str(e), 'log']))
 
     def update_fps(self):
-        current_tick = time()
+        current_tick = perf_counter()
         frame_time = current_tick-self.last_tick
 
         if self.last_tick != 0.0 and frame_time != 0.0:
