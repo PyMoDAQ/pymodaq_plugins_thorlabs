@@ -2,7 +2,7 @@
 
 [plugin-info]
 SHORT_PLUGIN_NAME = 'thorlabs'  #for instance daqmx
-package-url = 'https://github.com/CEMES-CNRS/pymodaq_plugins_thorlabs' #to modify
+package-url = 'https://github.com/PyMoDAQ/pymodaq_plugins_thorlabs' #to modify
 description = 'Set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10CR1 (stepper rotation actuator), Kinesis Flipper, Kinesis KSP100, DCx camera...)'
 
 author = 'Sébastien Weber'
