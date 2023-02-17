@@ -1,7 +1,7 @@
-from pymodaq.daq_utils.daq_utils import ThreadCommand
-from pymodaq.daq_utils.daq_utils import DataFromPlugins, Axis
+from pymodaq.utils.daq_utils import ThreadCommand
+from pymodaq.utils.data import DataFromPlugins, Axis
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
-from pymodaq.daq_utils.parameter import Parameter
+from pymodaq.utils.parameter import Parameter
 
 from pylablib.devices import Thorlabs
 from qtpy import QtWidgets, QtCore
@@ -276,11 +276,6 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         # Update reading
         self.settings.child('timing_opts', 'fps').setValue(round(self.fps, 1))
 
-
-    def callback(self):
-        """optional asynchrone method called when the detector has finished its acquisition of data"""
-        raise NotImplementedError
-
     def close(self):
         """
         Terminate the communication protocol
@@ -312,5 +307,6 @@ class ThorlabsCallback(QtCore.QObject):
         if new_data is not False: #will be returned if the main thread called CancelWait
             self.data_sig.emit()
 
+
 if __name__ == '__main__':
-    main(__file__)
+    main(__file__, init=False)
