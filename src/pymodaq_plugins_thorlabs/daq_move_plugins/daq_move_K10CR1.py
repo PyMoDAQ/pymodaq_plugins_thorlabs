@@ -7,7 +7,7 @@ the PATH system environment variable
 
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
 from pymodaq.control_modules.move_utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, find_dict_in_list_from_key_val
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo, find_dict_in_list_from_key_val
 from easydict import EasyDict as edict
 from instrumental.drivers.motion.kinesis import list_instruments
 from instrumental import instrument

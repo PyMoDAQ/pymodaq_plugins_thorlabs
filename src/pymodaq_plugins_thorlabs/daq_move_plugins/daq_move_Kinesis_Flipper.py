@@ -1,9 +1,11 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base
 from pymodaq.control_modules.move_utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
 from easydict import EasyDict as edict
 import clr
 import sys
+
+
 class DAQ_Move_Kinesis_Flipper(DAQ_Move_base):
     """
         Wrapper object to access the conex fonctionnalities, similar wrapper for all controllers.
