@@ -5,11 +5,9 @@ Thorlabs Kinesis drivers and SDKs should be installed and the path to where are 
 the PATH system environment variable
 """
 
-from pymodaq.daq_move.utility_classes import DAQ_Move_base, main
-from pymodaq.daq_move.utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, find_dict_in_list_from_key_val
-import clr
-import sys
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
+from pymodaq.control_modules.move_utility_classes import comon_parameters
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo, find_dict_in_list_from_key_val
 from easydict import EasyDict as edict
 from instrumental.drivers.motion.kinesis import list_instruments
 from instrumental import instrument

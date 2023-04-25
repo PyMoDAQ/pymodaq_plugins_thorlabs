@@ -1,7 +1,7 @@
-from pymodaq.daq_utils.daq_utils import ThreadCommand
-from pymodaq.daq_utils.daq_utils import DataFromPlugins, Axis
+from pymodaq.utils.daq_utils import ThreadCommand
+from pymodaq.utils.data import DataFromPlugins, Axis
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
-from pymodaq.daq_utils.parameter import Parameter
+from pymodaq.utils.parameter import Parameter
 
 from pylablib.devices import Thorlabs
 from qtpy import QtWidgets, QtCore
@@ -55,7 +55,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         self.callback_thread = None
 
         # Disable "use ROI" option to avoid confusion with other buttons
-        self.settings.child('ROIselect', 'use_ROI').setOpts(visible=False)
+        #self.settings.child('ROIselect', 'use_ROI').setOpts(visible=False)
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
@@ -276,11 +276,6 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         # Update reading
         self.settings.child('timing_opts', 'fps').setValue(round(self.fps, 1))
 
-
-    def callback(self):
-        """optional asynchrone method called when the detector has finished its acquisition of data"""
-        raise NotImplementedError
-
     def close(self):
         """
         Terminate the communication protocol
@@ -302,15 +297,17 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
 class ThorlabsCallback(QtCore.QObject):
     """Callback object """
     data_sig = QtCore.Signal()
-    def __init__(self,wait_fn):
+
+    def __init__(self, wait_fn):
         super().__init__()
-        #Set the wait function
+        # Set the wait function
         self.wait_fn = wait_fn
 
     def wait_for_acquisition(self):
         new_data = self.wait_fn()
-        if new_data is not False: #will be returned if the main thread called CancelWait
+        if new_data is not False:  # will be returned if the main thread called CancelWait
             self.data_sig.emit()
 
+
 if __name__ == '__main__':
-    main(__file__)
+    main(__file__, init=False)

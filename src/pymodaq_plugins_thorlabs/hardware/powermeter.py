@@ -36,9 +36,9 @@ from pathlib import Path
 import ctypes
 import functools
 
-from pymodaq.daq_utils import daq_utils as utils
-
-logger = utils.set_logger(utils.get_module_name(__file__))
+from pymodaq.utils import daq_utils as utils
+from pymodaq.utils.logger import set_logger, get_module_name
+logger = set_logger(get_module_name(__file__))
 if utils.is_64bits():
     path_dll = str(Path(os.environ['VXIPNPPATH64']).joinpath('Win64', 'Bin'))
 else:
@@ -195,11 +195,15 @@ class CustomTLPM:
 
 
 if __name__ == '__main__':
+    from time import sleep
     print(Ndevices)
     print(DEVICE_NAMES)
 
     with CustomTLPM(0) as tlpm:
-        tlpm.wavelength
-        tlpm.get_power()
+        print(tlpm.wavelength)
+        tlpm.wavelength = 532.
+        sleep(1)
+        print(tlpm.wavelength)
+        print(tlpm.get_power())
 
 

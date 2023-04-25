@@ -1,12 +1,11 @@
-from pymodaq.daq_move.utility_classes import DAQ_Move_base, main
-from pymodaq.daq_move.utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, set_logger, get_module_name
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
+from pymodaq.control_modules.move_utility_classes import comon_parameters
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.logger import set_logger, get_module_name
 import clr
 from qtpy import QtWidgets
 import sys
 from easydict import EasyDict as edict
-
-
 
 from System import Decimal
 from System import Action

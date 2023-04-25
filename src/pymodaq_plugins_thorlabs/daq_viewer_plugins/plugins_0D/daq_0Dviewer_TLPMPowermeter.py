@@ -16,16 +16,13 @@ VXIPNPPATH depending on your platform (32 or 64 bits) pointing to where the TLPM
 This plugin is making use of the TLPM.py script provided by thorlabs. An alternative is to use the TLPMPowermeterInst
 plugin using the Instrumental_lib package directly interfacing the C library with the nice Instrument wrapper
 """
-
-
-import sys
-from qtpy.QtCore import QThread
 from easydict import EasyDict as edict
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlugins
-from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base, main
-from collections import OrderedDict
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.data import DataFromPlugins
+from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, main
+
 import numpy as np
-from pymodaq.daq_viewer.utility_classes import comon_parameters
+from pymodaq.control_modules.viewer_utility_classes import comon_parameters
 from pymodaq_plugins_thorlabs.hardware.powermeter import CustomTLPM, DEVICE_NAMES
 
 

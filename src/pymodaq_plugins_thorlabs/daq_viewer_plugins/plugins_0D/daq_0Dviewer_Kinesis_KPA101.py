@@ -1,13 +1,13 @@
 import sys
 from qtpy.QtCore import QThread
 from easydict import EasyDict as edict
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo, DataFromPlugins
-from pymodaq.daq_viewer.utility_classes import DAQ_Viewer_base
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.data import DataFromPlugins
+from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base
 from collections import OrderedDict
 import numpy as np
 import clr
-from pymodaq.daq_viewer.utility_classes import comon_parameters
-
+from pymodaq.control_modules.viewer_utility_classes import comon_parameters
 
 
 class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
