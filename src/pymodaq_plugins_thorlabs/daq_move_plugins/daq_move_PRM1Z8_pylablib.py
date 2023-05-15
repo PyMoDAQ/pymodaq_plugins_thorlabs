@@ -1,12 +1,11 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base
-from pymodaq.control_modules.move_utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
+from pymodaq.control_modules.move_utility_classes import comon_parameters_fun
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
 from easydict import EasyDict as edict
 
 import pylablib.devices.Thorlabs as Thorlabs
 
-is_multiaxes = False
-stage_names = []
+
 
 class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
     """
@@ -17,22 +16,20 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         =============== ==============
     """
     _controller_units = 'deg'
-
+    is_multiaxes = False
+    stage_names = []
+    _epsilon = 0.1
     _dvc = Thorlabs.list_kinesis_devices()
-    serialnumbers = [d[0] for d in _dvc if d[1] == 'APT DC Motor Controller']
+    #serialnumbers = [d[0] for d in _dvc if d[1] == 'APT DC Motor Controller']
+    serialnumbers = [d[0] for d in _dvc]
 
     params= [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
              {'title': 'Home Position:', 'name': 'home_position', 'type': 'float', 'value': 0.0},
              {'title': 'Set Zero', 'name': 'set_zero', 'type': 'bool_push', 'value': False},
              {'title': 'Reset Home', 'name': 'reset_home', 'type': 'bool_push', 'value': False},
-             {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children':[
-                        {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes, 'default': False},
-                        {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master', 'limits': ['Master', 'Slave']},
-                        {'title': 'Axis:', 'name': 'axis', 'type': 'list', 'limits': stage_names},
-                        ]
-              }
-             ]+comon_parameters
+
+             ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
 
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
@@ -180,7 +177,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         self.emit_status(ThreadCommand('check_position', [pos]))
         return pos
 
-    def move_Abs(self,position):
+    def move_abs(self,position):
         """
             Make the hardware absolute move from the given position after thread command signal was received in DAQ_Move_main.
 
@@ -203,7 +200,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         self.target_position = position
         self.poll_moving()
 
-    def move_Rel(self,position):
+    def move_rel(self,position):
         """ Move the actuator to the relative target actuator value defined by position
         Parameters
         ----------
@@ -219,7 +216,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         self.emit_status(ThreadCommand('Update_Status', [f'Moving to position: {position}']))
         self.poll_moving()
 
-    def move_Home(self):
+    def move_home(self):
         """
             Make the absolute move to original position (0).
         """
@@ -228,3 +225,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         self.controller.move_to(home)
         self.emit_status(ThreadCommand('Update_Status', [f'Moving home: {home}']))
         self.poll_moving()
+
+
+if __name__ == '__main__':
+    main(__file__, init=False)
