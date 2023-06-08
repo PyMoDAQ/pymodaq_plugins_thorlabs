@@ -1,5 +1,5 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main
-from pymodaq.control_modules.move_utility_classes import comon_parameters
+from pymodaq.control_modules.move_utility_classes import comon_parameters_fun
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
 from pymodaq.utils.logger import set_logger, get_module_name
 import clr
@@ -41,7 +41,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
     """
     _controller_units = 'degrees'
-
+    _epsilon = 0.05
 
     try:
 
@@ -57,21 +57,12 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
     params = [{'title': 'Kinesis library:', 'name': 'kinesis_lib', 'type': 'browsepath', 'value': kinesis_path},
               {'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
-              {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children': [
-                  {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes,
-                   'default': False},
-                  {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master',
-                   'limits': ['Master', 'Slave']},
-                  {'title': 'Axis:', 'name': 'axis', 'type': 'list', 'limits': stage_names},
-
-              ]}] + comon_parameters
-
-    def __init__(self, parent=None, params_state=None):
-        super().__init__(parent, params_state)
+              ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
 
 
-        self.controller = None
-        self.settings.child('epsilon').setValue(0.005)
+    def ini_attributes(self):
+
+        self.controller: Integrated.CageRotator.CreateCageRotator = None
 
         try:
             if MOVEDONEACTION:
@@ -87,7 +78,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
             raise Exception(getLineInfo() + str(e))
 
     def someaction(self, pos_action):
-        position = self.check_position()
+        position = self.get_actuator_value()
         logger.debug(f'posaction is {pos_action} and position is {position}')
 
     def commit_settings(self, param):
@@ -112,69 +103,34 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
     def ini_stage(self, controller=None):
         """
-            Initialize the controller and stages (axes) with given parameters.
-
-            =============== ================================================ =========================================================================================
-            **Parameters**   **Type**                                         **Description**
-            *controller*     instance of the specific controller object       If defined this hardware will use it and will not initialize its own controller instance
-            *stage*          instance of the stage (axis or whatever) object  ???
-            =============== ================================================ =========================================================================================
-
-            Returns
-            -------
-            Easydict
-                dictionnary containing keys:
-                 * *info* : string displaying various info
-                 * *controller*: instance of the controller object in order to control other axes without the need to init the same controller twice
-                 * *stage*: instance of the stage (axis or whatever) object
-                 * *initialized*: boolean indicating if initialization has been done corretly
-
-            See Also
-            --------
-            daq_utils.ThreadCommand
         """
-        try:
-            self.status.update(edict(info="", controller=None, initialized=False))
 
-            # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
+        Device.DeviceManagerCLI.BuildDeviceList()
+        serialnumbers = Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)
+        ser_bool = self.settings['serial_number'] in serialnumbers
+        if ser_bool:
+            self.controller = self.ini_stage_init(controller,
+                                                  Integrated.CageRotator.CreateCageRotator(
+                                                      self.settings['serial_number']))
+        else:
+            raise Exception("Not valid serial number")
 
-            # if mutliaxes then init the controller here if Master state otherwise use external controller
-            if self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
-                                                                                               'multi_status').value() == "Slave":
-                if controller is None:
-                    raise Exception('no controller has been defined externally while this axe is a slave one')
-                else:
-                    self.controller = controller
-            else:  # Master stage
+        if self.settings['multiaxes', 'multi_status'] == "Master":
 
-                Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers = Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)
-                ser_bool = self.settings.child('serial_number').value() in serialnumbers
-                if ser_bool:
-                    self.controller = Integrated.CageRotator.CreateCageRotator(
-                        self.settings.child('serial_number').value())
-                    self.controller.Connect(self.settings.child('serial_number').value())
-                    self.controller.WaitForSettingsInitialized(5000)
-                    self.controller.StartPolling(250)
-                else:
-                    raise Exception("Not valid serial number")
+            self.controller.Connect(self.settings['serial_number'])
+            self.controller.WaitForSettingsInitialized(5000)
+            self.controller.StartPolling(250)
 
-            info = self.controller.GetDeviceInfo().Name
-            self.settings.child('controller_id').setValue(info)
-            if not (self.controller.IsSettingsInitialized()):
-                raise (Exception("no Stage Connected"))
-            self.motorSettings = self.controller.GetMotorConfiguration(self.settings.child('serial_number').value(), 2)
-            self.controller.SetBacklash(Decimal(0))
-            self.status.info = info
-            self.status.controller = self.controller
-            self.status.initialized = True
-            return self.status
+        info = self.controller.GetDeviceInfo().Name
+        self.settings.child('controller_id').setValue(info)
+        if not (self.controller.IsSettingsInitialized()):
+            raise (Exception("no Stage Connected"))
+        else:
+            self.controller.LoadMotorConfiguration(self.settings['serial_number'])
+        self.controller.SetBacklash(Decimal(0))
 
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [getLineInfo() + str(e), 'log']))
-            self.status.info = getLineInfo() + str(e)
-            self.status.initialized = False
-            return self.status
+        initialized = True
+        return info, initialized
 
     def close(self):
         """
@@ -194,7 +150,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         self.controller.stop(0)
         self.move_done()
 
-    def check_position(self):
+    def get_actuator_value(self):
         """
             Get the current hardware position with scaling conversion of the Kinsesis insrument provided by get_position_with_scaling
 
@@ -209,7 +165,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         self.emit_status(ThreadCommand('check_position', [pos]))
         return pos
 
-    def move_Abs(self, position):
+    def move_abs(self, position):
         """
             Make the hardware absolute move from the given position of the Kinesis instrument after thread command signal was received in DAQ_Move_main.
 
@@ -232,7 +188,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         self.controller.MoveTo(Decimal(position), self.move_done_action)
         QtWidgets.QApplication.processEvents()
 
-    def move_Rel(self, position):
+    def move_rel(self, position):
         """
             | Make the hardware relative move from the given position of the Kinesis instrument after thread command signal was received in DAQ_Move_main.
             |
@@ -256,9 +212,7 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
         self.controller.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), self.move_done_action)
 
-
-
-    def move_Home(self):
+    def move_home(self):
         """
             Make the absolute move to original position (0).
         """
@@ -266,4 +220,4 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
 
 
 if __name__ == '__main__':
-    main(__file__)
+    main(__file__, init=False)
