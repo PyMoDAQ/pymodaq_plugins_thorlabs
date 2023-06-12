@@ -147,9 +147,15 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         kwds = {'exposure_time': Q_(self.settings.child('exposure').value(), 'ms'),
                 'gain': self.settings.child('master_gain').value()}
 
-        data =self.controller.grab_image(**kwds)
+        data = self.controller.grab_image(**kwds)
+
+        if len(data.shape) > 2:
+            data_list = [data[..., ind] for ind in range(data.shape[2])]
+        else:
+            data_list = [data]
+
         # data = self.controller.grab_image(exposure_time=Q_(self.settings.child('exposure').value(), 'ms'))
-        self.data_grabed_signal.emit([DataFromPlugins(name='Thorcam', data=[data],
+        self.data_grabed_signal.emit([DataFromPlugins(name='Thorcam', data=data_list,
                                                       dim='Data2D')])
 
     def stop(self):
@@ -160,4 +166,4 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
 
 
 if __name__ == '__main__':
-    main(__file__)
+    main(__file__, init=False)
