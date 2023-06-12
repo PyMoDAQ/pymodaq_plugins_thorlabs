@@ -121,10 +121,10 @@ class Flipper(Kinesis):
             raise ValueError('Invalid Serial Number')
 
     def move_abs(self, position: float, callback=None):
-        if int(position) == 0:
-            position = 2
-        else:
+        if int(position) == 1:
             position = 1
+        else:
+            position = 2
         self._device.SetPosition(UInt32(position), 0)
 
     def get_position(self):
