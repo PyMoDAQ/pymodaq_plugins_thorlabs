@@ -49,8 +49,7 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        self.controller.get_angle()
-        pos = self.controller.your_method_to_get_the_actuator_value()  # when writing your own plugin replace this line
+        pos = self.controller.get_angle()
         pos = self.get_position_with_scaling(pos)
         return pos
 
