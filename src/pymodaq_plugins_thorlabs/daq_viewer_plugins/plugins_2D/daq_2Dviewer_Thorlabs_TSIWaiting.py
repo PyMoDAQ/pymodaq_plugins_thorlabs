@@ -10,7 +10,7 @@ import numpy as np
 from time import perf_counter
 
 
-class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
+class DAQ_2DViewer_Thorlabs_TSIWaiting(DAQ_Viewer_base):
     """
     Plugin for Thorlabs scientific sCMOS cameras such as Kiralux or Zelux. It has been tested with Thorlabs Zelux camera on Windows.
     Building on pylablib driver, information about it can be found here : https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html
@@ -24,6 +24,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     The "Clear ROI+Bin" button resets to default cameras parameters: no binning and full frame.
     """
 
+    live_mode_available = True
     serialnumbers = Thorlabs.list_cameras_tlcam()
 
     params = comon_parameters + [
@@ -56,6 +57,8 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
 
         self.data_shape: str = ''
         self.callback_thread = None
+
+        self.live = False
 
         # Disable "use ROI" option to avoid confusion with other buttons
         #self.settings.child('ROIselect', 'use_ROI').setOpts(visible=False)
@@ -164,18 +167,18 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         self.settings.child('hdet').setValue(width)
         self.settings.child('vdet').setValue(height)
 
-        # Way to define a wait function with arguments
-        wait_func = lambda: self.controller.wait_for_frame(since='lastread', nframes=1, timeout=20.0)
-        callback = ThorlabsCallback(wait_func)
-
-        self.callback_thread = QtCore.QThread()  # creation of a Qt5 thread
-        callback.moveToThread(self.callback_thread)  # callback object will live within this thread
-        callback.data_sig.connect(
-            self.emit_data)  # when the wait for acquisition returns (with data taken), emit_data will be fired
-
-        self.callback_signal.connect(callback.wait_for_acquisition)
-        self.callback_thread.callback = callback
-        self.callback_thread.start()
+        # # Way to define a wait function with arguments
+        # wait_func = lambda: self.controller.wait_for_frame(since='lastread', nframes=1, timeout=20.0)
+        # callback = ThorlabsCallback(wait_func)
+        #
+        # self.callback_thread = QtCore.QThread()  # creation of a Qt5 thread
+        # callback.moveToThread(self.callback_thread)  # callback object will live within this thread
+        # callback.data_sig.connect(
+        #     self.emit_data)  # when the wait for acquisition returns (with data taken), emit_data will be fired
+        #
+        # self.callback_signal.connect(callback.wait_for_acquisition)
+        # self.callback_thread.callback = callback
+        # self.callback_thread.start()
 
         self._prepare_view()
 
@@ -236,12 +239,23 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         try:
             # Warning, acquisition_in_progress returns 1,0 and not a real bool
             if not self.controller.acquisition_in_progress():
-                self.controller.clear_acquisition()
+                #self.controller.clear_acquisition()
                 self.controller.start_acquisition()
-            #Then start the acquisition
-            self.callback_signal.emit()  # will trigger the wait for acquisition
+            # #Then start the acquisition
+            # self.callback_signal.emit()  # will trigger the wait for acquisition
 
-        except Exception as e:
+            timeout = self.settings['timing_opts', 'exposure_time'] * Naverage * 1.2
+
+            if 'live' in kwargs and kwargs['live']:
+                self.live = True
+                while self.live:
+                    self.controller.wait_for_frame(since='lastread', nframes=1, timeout=timeout)
+                    self.emit_data()
+            else:
+                self.controller.wait_for_frame(since='lastread', nframes=1, timeout=timeout)
+                self.emit_data()
+
+        except Thorlabs.ThorlabsTimeoutError as e:
             self.emit_status(ThreadCommand('Update_Status', [str(e), "log"]))
 
     def emit_data(self):
@@ -321,6 +335,9 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
 
     def stop(self):
         """Stop the acquisition."""
+        self.live = False
+        QtWidgets.QApplication.processEvents()
+
         self.controller.clear_acquisition()
         return ''
 
