@@ -29,7 +29,9 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     params = comon_parameters + [
         {'title': 'Camera name:', 'name': 'camera_name', 'type': 'str', 'value': '', 'readonly': True},
         {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
-        {'title': 'Sensor type:', 'name': 'sensor', 'type': 'str', 'value': '', 'readonly': True},
+        #{'title': 'Sensor type:', 'name': 'sensor', 'type': 'str', 'value': '', 'readonly': True},
+        #this will be used once pylablib accepts PR52
+        {'title': 'Sensor type:', 'name': 'sensor', 'type': 'list', 'limits': ['Monochrome', 'Bayer']},
         {'title': 'Ouput Color:', 'name': 'output_color', 'type': 'list', 'limits': ['RGB', 'MonoChrome']},
         {'title': 'Update ROI', 'name': 'update_roi', 'type': 'bool_push', 'value': False},
         {'title': 'Clear ROI+Bin', 'name': 'clear_roi', 'type': 'bool_push', 'value': False},
@@ -143,10 +145,11 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         # Get camera name
         self.settings.child('camera_name').setValue(device_info.name)
 
-        # Get Sensor Type
-        self.settings.child('sensor').setValue(device_info.sensor_type)
+        # this will be used once pylablib accepts PR52
+        # # Get Sensor Type
+        # self.settings.child('sensor').setValue(device_info.sensor_type)
 
-        if 'monochrome' in device_info.sensor_type.lower():
+        if 'monochrome' in self.settings['sensor'].lower():
             self.settings.child('output_color').setValue('MonoChrome')
             self.settings.child('output_color').setOpts(visible=False)
 
