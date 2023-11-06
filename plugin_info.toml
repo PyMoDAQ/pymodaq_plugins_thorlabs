@@ -11,7 +11,8 @@ license = 'MIT'
 
 [plugin-install]
 #packages required for your plugin:
-packages-required = ["pythonnet", "pywin32", "nicelib", "instrumental-lib", "pylablib", 'pymodaq>=4.0']
+packages-required = ["pythonnet", "pywin32", "nicelib", "instrumental-lib", "pylablib", 'pymodaq>=4.0',
+    'opencv-python']
 
 [features]  # defines the plugin features contained into this plugin
 instruments = true  # true if plugin contains instrument classes (else false, notice the lowercase for toml files)

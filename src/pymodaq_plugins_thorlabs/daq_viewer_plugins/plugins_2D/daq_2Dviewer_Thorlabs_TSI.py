@@ -1,3 +1,4 @@
+import cv2
 from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, Axis
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
@@ -28,6 +29,10 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     params = comon_parameters + [
         {'title': 'Camera name:', 'name': 'camera_name', 'type': 'str', 'value': '', 'readonly': True},
         {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
+        #{'title': 'Sensor type:', 'name': 'sensor', 'type': 'str', 'value': '', 'readonly': True},
+        #this will be used once pylablib accepts PR52
+        {'title': 'Sensor type:', 'name': 'sensor', 'type': 'list', 'limits': ['Monochrome', 'Bayer']},
+        {'title': 'Ouput Color:', 'name': 'output_color', 'type': 'list', 'limits': ['RGB', 'MonoChrome']},
         {'title': 'Update ROI', 'name': 'update_roi', 'type': 'bool_push', 'value': False},
         {'title': 'Clear ROI+Bin', 'name': 'clear_roi', 'type': 'bool_push', 'value': False},
         {'title': 'X binning', 'name': 'x_binning', 'type': 'int', 'value': 1},
@@ -44,14 +49,14 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     callback_signal = QtCore.Signal()
 
     def ini_attributes(self):
-        self.controller: Thorlabs = None
+        self.controller: Thorlabs.ThorlabsTLCamera = None
 
         self.x_axis = None
         self.y_axis = None
         self.last_tick = 0.0  # time counter used to compute FPS
         self.fps = 0.0
 
-        self.data_shape = 'Data2D'
+        self.data_shape: str = ''
         self.callback_thread = None
 
         # Disable "use ROI" option to avoid confusion with other buttons
@@ -135,8 +140,18 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         else:
             raise Exception('No compatible Thorlabs scientific camera was found.')
 
+        device_info = self.controller.get_device_info()
+
         # Get camera name
-        self.settings.child('camera_name').setValue(self.controller.get_device_info().name)
+        self.settings.child('camera_name').setValue(device_info.name)
+
+        # this will be used once pylablib accepts PR52
+        # # Get Sensor Type
+        # self.settings.child('sensor').setValue(device_info.sensor_type)
+
+        if 'monochrome' in self.settings['sensor'].lower():
+            self.settings.child('output_color').setValue('MonoChrome')
+            self.settings.child('output_color').setOpts(visible=False)
 
         # Set exposure time
         self.controller.set_exposure(self.settings.child('timing_opts', 'exposure_time').value()/1000)
@@ -146,7 +161,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
 
         # Update image parameters
         (*_, hbin, vbin) = self.controller.get_roi()
-        height, width = self.controller._get_data_dimensions_rc()
+        height, width = self.controller.get_data_dimensions()
         self.settings.child('x_binning').setValue(hbin)
         self.settings.child('y_binning').setValue(vbin)
         self.settings.child('hdet').setValue(width)
@@ -181,11 +196,11 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         #
         # sizex = wx // bx
         # sizey = wy // by
-        height, width = self.controller._get_data_dimensions_rc()
+        height, width = self.controller.get_data_dimensions()
 
         self.settings.child('hdet').setValue(width)
         self.settings.child('vdet').setValue(height)
-        mock_data = np.zeros((width, height))
+        mock_data = np.zeros((height, width))
 
         if width != 1 and height != 1:
             data_shape = 'Data2D'
@@ -233,21 +248,41 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
             self.emit_status(ThreadCommand('Update_Status', [str(e), "log"]))
 
     def emit_data(self):
-        """
-            Fonction used to emit data obtained by callback.
-            See Also
-            --------
-            daq_utils.ThreadCommand
+        """ Function used to emit data obtained by callback.
+
+        Parameter
+        ---------
+        status: bool
+            If True a frame is available, If False, a Timeout occured while waiting for the frame
+
+        See Also
+        --------
+        daq_utils.ThreadCommand
         """
         try:
             # Get  data from buffer
             frame = self.controller.read_newest_image()
             # Emit the frame.
             if frame is not None:       # happens for last frame when stopping camera
-                self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
-                                                          data=[np.squeeze(frame)],
-                                                          dim=self.data_shape,
-                                                          labels=[f'ThorCam_{self.data_shape}'])])
+                if self.settings['output_color'] == 'RGB':
+                    rgb_image = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2RGB)
+                    self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
+                                                                  data=[np.squeeze(rgb_image[..., ind]) for ind in
+                                                                        range(3)],
+                                                                  dim=self.data_shape,
+                                                                  labels=[f'ThorCam_{self.data_shape}'])])
+                else:
+                    if 'monochrome' in self.settings['sensor'].lower():
+                        self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
+                                                                      data=[np.squeeze(frame)],
+                                                                      dim=self.data_shape,
+                                                                      labels=[f'ThorCam_{self.data_shape}'])])
+                    else:
+                        grey_image = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2GRAY)
+                        self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
+                                                                      data=[np.squeeze(grey_image)],
+                                                                      dim=self.data_shape,
+                                                                      labels=[f'ThorCam_{self.data_shape}'])])
 
             if self.settings.child('timing_opts', 'fps_on').value():
                 self.update_fps()
@@ -289,7 +324,6 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
 
     def stop(self):
         """Stop the acquisition."""
-        self.controller.stop_acquisition()
         self.controller.clear_acquisition()
         return ''
 
@@ -304,9 +338,12 @@ class ThorlabsCallback(QtCore.QObject):
         self.wait_fn = wait_fn
 
     def wait_for_acquisition(self):
-        new_data = self.wait_fn()
-        if new_data is not False:  # will be returned if the main thread called CancelWait
-            self.data_sig.emit()
+        try:
+            new_data = self.wait_fn()
+            if new_data is not False:  # will be returned if the main thread called CancelWait
+                self.data_sig.emit()
+        except Thorlabs.ThorlabsTimeoutError:
+            pass
 
 
 if __name__ == '__main__':
