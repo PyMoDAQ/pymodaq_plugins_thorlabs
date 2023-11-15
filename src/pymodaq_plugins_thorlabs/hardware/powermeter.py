@@ -46,7 +46,7 @@ else:
 os.add_dll_directory(path_dll)
 
 try:
-    path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Example', 'Python')
+    path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Examples', 'Python')
     sys.path.insert(0, str(path_python_wrapper))
     import TLPM
 except ModuleNotFoundError as e:
