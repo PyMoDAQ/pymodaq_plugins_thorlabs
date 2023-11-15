@@ -45,15 +45,27 @@ else:
     path_dll = str(Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'Bin'))
 os.add_dll_directory(path_dll)
 
-try:
-    path_python_wrapper = Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', 'Examples', 'Python')
-    sys.path.insert(0, str(path_python_wrapper))
-    import TLPM
-except ModuleNotFoundError as e:
-    error = f"The *TLPM.py* python wrapper of thorlabs TLPM dll could not be located on your system. Check if present" \
-            f" in {path_dll}"
-    raise ModuleNotFoundError(error)
 
+def tlpm_path(tlpm: Path):
+    return Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'TLPM', tlpm, 'Python')
+
+
+module_error = True
+for example_str in ['Example', 'Examples']:
+    try:
+        path_python_wrapper = tlpm_path(example_str)
+        sys.path.insert(0, str(path_python_wrapper))
+        import TLPM
+        module_error = False
+        break
+    except ModuleNotFoundError as e:
+        pass
+if module_error:
+    error = f"The *TLPM.py* python wrapper of thorlabs TLPM dll could not be located on your system. Check if present"\
+            f" in one of these path:\n"\
+            f"{tlpm_path('Example')}\n"\
+            f"{tlpm_path('Examples')}"
+    raise ModuleNotFoundError(error)
 
 def error_handling(default_arg=None):
     """decorator around TLPM functions to handle return if errors"""
