@@ -162,7 +162,6 @@ class DAQ_Move_Kinesis(DAQ_Move_base):
         pos = Decimal.ToDouble(self.controller.ContinuousRotationPosition)
         logger.debug(f'Motor state is {self.controller.State} and position is {pos}')
         pos = self.get_position_with_scaling(pos)
-        self.emit_status(ThreadCommand('check_position', [pos]))
         return pos
 
     def move_abs(self, position):
