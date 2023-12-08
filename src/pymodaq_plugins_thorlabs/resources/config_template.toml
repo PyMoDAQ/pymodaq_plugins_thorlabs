@@ -1,2 +1,6 @@
-#this is the configuration file of the plugin
+title = 'this is the configuration file of the plugin'
+
+[PRM1Z8]
+show_bounds = true
+show_scaling = true
 

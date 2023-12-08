@@ -54,7 +54,8 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
         """
             close the current instance of Kinesis instrument.
         """
-        self.controller.close()
+        if self.controller is not None:
+            self.controller.close()
 
     def stop_motion(self):
         """
@@ -62,7 +63,8 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
             --------
             DAQ_Move_base.move_done
         """
-        self.controller.stop()
+        if self.controller is not None:
+            self.controller.stop()
 
     def get_actuator_value(self):
         """
