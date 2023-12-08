@@ -54,12 +54,12 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         if param.name() == 'set_zero':
             if param.value() == True:
                 self.controller.set_position_reference(scale=True)
-                self.check_position()
+                self.get_actuator_value()
                 self.settings.child('set_zero').setValue(False)
         elif param.name() == 'reset_home':
             if param.value() == True:
                 self.controller.home(force=True, timeout=self.settings['timeout'])
-                self.check_position()
+                self.get_actuator_value()
                 self.settings.child('reset_home').setValue(False)
 
     def ini_stage(self,controller=None):
@@ -84,7 +84,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
             --------
             daq_utils.ThreadCommand
         """
-        self.ini_stage_init(controller, Thorlabs.kinesis.KinesisMotor(self.settings['serial_number'], bscale='stage'))
+        self.ini_stage_init(controller, Thorlabs.kinesis.KinesisMotor(self.settings['serial_number'], scale='stage'))
 
         if not self.controller.is_opened():
             self.controller.open()
@@ -100,7 +100,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
 
         unit = self.controller.get_scale_units()
         assert unit == 'deg'
-
+        initialized = True
         return info.notes, initialized
 
     def close(self):
@@ -174,7 +174,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         """
         home = self.settings['home_position']
         self.target_position = home
-        self.controller.move_to(home)
+        self.move_abs(home)
 
 
 if __name__ == '__main__':
