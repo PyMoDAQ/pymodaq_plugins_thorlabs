@@ -33,18 +33,16 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **Kinesis**: Kinesis serie (tested on K10CR1)
-* **Kinesis_Flipper**: Kinesis serie Flipper
-* **MFF101_pylablib**: Kinesis serie Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
+* **KinesisIntegratedStepper**: Integrated Stepper Motor Kinesis series (tested on K10CR1)
+* **Kinesis_Flipper**: Kinesis series Flipper
+* **MFF101_pylablib**: Kinesis series Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
 
 Viewer0D
 ++++++++
 
-* **Kinesis_KPA101**: Kinesis serie (position sensitive photodetector)
+* **Kinesis_KPA101**: Position Sensitive Photodetector Kinesis series (KPA101)
 * **TLPMPowermeter**: TLPM dll compatible series (PM101x, PM102x, PM103x, PM100USB, PM16-Series, PM160, PM400, PM100A, PM100D, PM200)
-* **TLPMPowermeterInst**: TLPM dll compatible series (PM101x, PM102x, PM103x, PM100USB, PM16-Series, PM160, PM400, PM100A, PM100D, PM200)
-  using the Instrumental-lib package (recommended)
 
 Viewer2D
 ++++++++
