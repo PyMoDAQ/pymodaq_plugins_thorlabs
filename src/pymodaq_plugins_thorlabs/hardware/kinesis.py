@@ -16,9 +16,13 @@ clr.AddReference("Thorlabs.MotionControl.IntegratedStepperMotorsCLI")
 clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
+clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
+import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo 
+import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 
@@ -26,7 +30,8 @@ import Thorlabs.MotionControl.GenericMotorCLI as Generic
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-
+# FIXME: Piezo serial numbers are not being detected
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.DevicePrefix)]
 
 class Kinesis:
 
@@ -86,7 +91,6 @@ class Kinesis:
     def get_position(self):
         raise NotImplementedError
 
-
 class IntegratedStepper(Kinesis):
 
     def __init__(self):
@@ -134,3 +138,20 @@ class Flipper(Kinesis):
         else:
             position = 1
         return position
+
+
+class Piezo(Kinesis):
+    def __init__(self):
+        self._device: GenericPiezo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_piezo:
+            self._device = KCubePiezo.CreateKCubePiezo(serial)
+            super().connect(serial)
+            if not (self._device.IsSettingsInitialized()):
+                raise (Exception("no Stage Connected"))
+            else:
+                raise ValueError('Invalid Serial Number')
+            
+    def get_voltage(self):
+        return Decimal.ToDouble(self._device.GetOutputVoltage())
