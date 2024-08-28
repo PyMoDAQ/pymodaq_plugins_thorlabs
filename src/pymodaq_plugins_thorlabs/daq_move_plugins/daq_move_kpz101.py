@@ -17,7 +17,7 @@ from Thorlabs.MotionControl.GenericPiezoCLI import *
 from Thorlabs.MotionControl.KCube.PiezoCLI import *
 from System import Decimal
 import time
-import system
+from os import system
 
 # TODO:
 # (1) change the name of the following class to DAQ_Move_TheNameOfYourChoice
