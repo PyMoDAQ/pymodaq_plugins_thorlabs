@@ -1,10 +1,10 @@
 import clr
 import sys
 
-from System import Decimal
-from System import Action
-from System import UInt64
-from System import UInt32
+from decimal import Decimal
+# from System import Action
+# from System import UInt64
+# from System import UInt32
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
@@ -16,17 +16,20 @@ clr.AddReference("Thorlabs.MotionControl.IntegratedStepperMotorsCLI")
 clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
+import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-
+serialnumbers_piezo = Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)
+serialnumbers_piezo = [str(ser) for ser in serialnumbers_piezo]
 
 class Kinesis:
 
