@@ -30,8 +30,7 @@ import Thorlabs.MotionControl.GenericMotorCLI as Generic
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-# FIXME: Piezo serial numbers are not being detected
-serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.DevicePrefix)]
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
 class Kinesis:
 
@@ -143,6 +142,7 @@ class Flipper(Kinesis):
 class Piezo(Kinesis):
     def __init__(self):
         self._device: GenericPiezo = None
+
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
