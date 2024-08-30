@@ -1,10 +1,11 @@
 import clr
 import sys
-
+from os import system
 from decimal import Decimal
-from System import Action
-from System import UInt64
-from System import UInt32
+
+from _system_path import Action
+from _system_path import UInt64
+from _system_path import UInt32
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
