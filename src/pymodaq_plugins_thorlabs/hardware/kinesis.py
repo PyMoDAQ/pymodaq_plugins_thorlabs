@@ -28,8 +28,7 @@ import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_piezo = Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)
-serialnumbers_piezo = [str(ser) for ser in serialnumbers_piezo]
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
 class Kinesis:
 
@@ -147,7 +146,32 @@ class Piezo(Kinesis):
         if serial in serialnumbers_piezo:
             self._device = KCubePiezo.CreateKCubePiezo(serial)
             super().connect(serial)
+            self._device.EnableDevice()
             if not (self._device.IsSettingsInitialized()):
                 raise (Exception("no Stage Connected"))
         else:
             raise ValueError('Invalid Serial Number')
+    
+    def get_voltage(self):
+        voltage = self._device.GetOutputVoltage()
+        return voltage
+    
+    def set_voltage(self, voltage : float, callback = None):
+        if callback is not None: 
+            callback = Action[UInt64](callback)
+        else: 
+            callback = 0 
+            min_volt = System.Decimal(0)
+            max_volt = self._device.GetMaxOutputVoltage()
+            if voltage >= min_volt and voltage <= max_volt:
+                self._device.SetOutputVoltage(voltage, callback) #check if needs one command or two allowed
+
+    def move_home(self, callback = None):
+        if callback is not None:
+            callback = Action[UInt64](callback)
+        else:
+            callback = 0
+        self._device.SetZero(callback) 
+
+
+
