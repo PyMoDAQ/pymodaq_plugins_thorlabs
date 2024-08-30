@@ -3,7 +3,9 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
-#from pymeasure.instruments.thorlabs import KPZ101
+import pymodaq_plugins_thorlabs.hardware.kinesis as kinesis
+print(dir(kinesis))
+from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo
 
 import clr
 clr.AddReference(r"C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.DeviceManagerCLI")
@@ -25,7 +27,7 @@ import system
 #     for the class name and the file name.)
 # (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
 #     pymodaq_plugins_my_plugin/daq_move_plugins
-class DAQ_Move_KPZ101(DAQ_Move_base):
+class DAQ_Move_Kpz101(DAQ_Move_base):
     """ KPZ101 plugin class for an actuator.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
@@ -47,18 +49,21 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     # TODO add your particular attributes here if any
 
     """
-    _controller_units = 'V'
+    _controller_units = 'um'
     is_multiaxes = False  # TODO for your plugin set to True if this plugin is controlled for a multiaxis controller
-    _axis_names = ['Voltage'] 
+    _axis_names = ['Distance'] 
     _epsilon = 0  # TODO replace this by a value that is correct depending on your controller
     data_actuator_type = DataActuatorType['float']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
+    params = [{'title': 'KPZ101 Stage:', 'name': 'kpz101', 'type': 'str', 'value': '', 'readonly': True},
+              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
+               'limits': serialnumbers_piezo},
+              {'title': 'Backlash:', 'name': 'backlash', 'type': 'float', 'value': 0, },
+              ] + comon_parameters_fun(is_multiaxes,axis_names = _axis_names, epsilon=_epsilon)
 
-    params = [{'title': 'KPZ101 Parameters', 'name': 'KPZ101'}] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
-    # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
-    # the target value. It is the developer responsibility to put here a meaningful value
-
-    def ini_attributes(self):
+    def __init__(self, parent = None, params_state = None):
+        super().__init__(parent, params_state)
+        self.controller = None # TODO replace None by the object of your controller
         DeviceManagerCLI.BuildDeviceList()
         serial_number = '29252556' #must add serial number
         self.controller = KCubePiezo.CreateKCubePiezo(serial_number)
