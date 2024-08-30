@@ -1,15 +1,18 @@
 # Purpose: Control the KPZ101 piezo stage from Thorlabs with PyMoDAQ plugin
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
-    DataActuator  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
-from pymodaq.utils.parameter import Parameter
-import pymodaq_plugins_thorlabs.hardware.kinesis as kinesis
-print(dir(kinesis))
-from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo
 
-from System import Decimal
-import time
-import system
+# import time
+# from os import system
+
+# from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator  # common set of parameters for all actuators
+# from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
+# from pymodaq.utils.parameter import Parameter
+# import pymodaq_plugins_thorlabs.hardware.kinesis as kinesis
+# print(dir(kinesis))
+# from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
+from pymodaq.utils.logger import set_logger, get_module_name
+
+from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
 
 # TODO:
 # (1) change the name of the following class to DAQ_Move_TheNameOfYourChoice
@@ -54,19 +57,19 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     def __init__(self, parent = None, params_state = None):
         super().__init__(parent, params_state)
         self.controller = None # TODO replace None by the object of your controller
-        DeviceManagerCLI.BuildDeviceList()
-        serial_number = '29252556' #must add serial number
-        self.controller = KCubePiezo.CreateKCubePiezo(serial_number)
+            # DeviceManagerCLI.BuildDeviceList()
+            # serial_number = '29252556' #must add serial number
+            # self.controller = KCubePiezo.CreateKCubePiezo(serial_number)
 
-        self.controller.Connect(serial_number)
+            # self.controller.Connect(serial_number)
 
-        info_device = self.controller.GetDeviceInfo()
+            # info_device = self.controller.GetDeviceInfo()
 
-        self.controller.StartPolling(250)
-        time.sleep(0.25)
+            # self.controller.StartPolling(250)
+            # time.sleep(0.25)
 
-        self.controller.EnableDevice()
-        time.sleep(0.25) 
+            # self.controller.EnableDevice()
+            # time.sleep(0.25) 
 
         # device_config = self.controller.GetPiezoConfiguration(serial_number)
 
