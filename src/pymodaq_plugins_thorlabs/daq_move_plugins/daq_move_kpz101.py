@@ -7,16 +7,6 @@ import pymodaq_plugins_thorlabs.hardware.kinesis as kinesis
 print(dir(kinesis))
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo
 
-import clr
-clr.AddReference(r"C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.DeviceManagerCLI")
-clr.AddReference(r"C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.GenericMotorCLI.dll")
-clr.AddReference(r"C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.GenericPiezoCLI.dll")
-clr.AddReference(r"C:\Program Files\Thorlabs\Kinesis\Thorlabs.MotionControl.KCube.PiezoCLI.dll")
-
-from Thorlabs.MotionControl.DeviceManagerCLI import * 
-from Thorlabs.MotionControl.GenericMotorCLI import *
-from Thorlabs.MotionControl.GenericPiezoCLI import *
-from Thorlabs.MotionControl.KCube.PiezoCLI import *
 from System import Decimal
 import time
 import system
@@ -27,7 +17,7 @@ import system
 #     for the class name and the file name.)
 # (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
 #     pymodaq_plugins_my_plugin/daq_move_plugins
-class DAQ_Move_Kpz101(DAQ_Move_base):
+class DAQ_Move_KPZ101(DAQ_Move_base):
     """ KPZ101 plugin class for an actuator.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
