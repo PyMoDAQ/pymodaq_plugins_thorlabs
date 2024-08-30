@@ -2,9 +2,9 @@ import clr
 import sys
 
 from decimal import Decimal
-# from System import Action
-# from System import UInt64
-# from System import UInt32
+from System import Action
+from System import UInt64
+from System import UInt32
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
@@ -137,3 +137,17 @@ class Flipper(Kinesis):
         else:
             position = 1
         return position
+
+
+class KPZ101(Kinesis):
+    def __init__(self):
+        self._device: KCubePiezo.KCubePiezo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_piezo:
+            self._device = KCubePiezo.CreateKCubePiezo(serial)
+            super().connect(serial)
+            if not (self._device.IsSettingsInitialized()):
+                raise (Exception("no Stage Connected"))
+        else:
+            raise ValueError('Invalid Serial Number')
