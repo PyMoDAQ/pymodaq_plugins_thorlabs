@@ -139,7 +139,7 @@ class Flipper(Kinesis):
         return position
 
 
-class KPZ101(Kinesis):
+class Piezo(Kinesis):
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
 
