@@ -1,4 +1,4 @@
-#
+# Must rename daq_move_kpz101 to daq_move_KPZ101. 
 # Purpose: Control the KPZ101 piezo stage from Thorlabs with PyMoDAQ plugin
 
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
