@@ -1,10 +1,11 @@
 import clr
 import sys
-
+from os import system
 from decimal import Decimal
-# from System import Action
-# from System import UInt64
-# from System import UInt32
+
+from System import Action
+from System import UInt64
+from System import UInt32
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
@@ -18,6 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
+
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo 
@@ -30,8 +32,7 @@ import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_piezo = Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)
-serialnumbers_piezo = [str(ser) for ser in serialnumbers_piezo]
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
 class Kinesis:
 
@@ -142,17 +143,38 @@ class Flipper(Kinesis):
 
 class Piezo(Kinesis):
     def __init__(self):
-        self._device: GenericPiezo = None
-
+        self._device: KCubePiezo.KCubePiezo = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
-            self._device = KCubePiezo.CreateKCubePiezo(serial)
+            self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
             super().connect(serial)
+            self._device.EnableDevice() #TODO: Delete or keep depending if necessary 
             if not (self._device.IsSettingsInitialized()):
                 raise (Exception("no Stage Connected"))
-            else:
-                raise ValueError('Invalid Serial Number')
-            
+        else:
+            raise ValueError('Invalid Serial Number')
+    
     def get_voltage(self):
-        return Decimal.ToDouble(self._device.GetOutputVoltage())
+        voltage = self._device.GetOutputVoltage()
+        return voltage
+    
+    def set_voltage(self, voltage : float, callback = None):
+        if callback is not None: 
+            callback = Action[UInt64](callback)
+        else: 
+            callback = 0 
+            min_volt = System.Decimal(0)
+            max_volt = self._device.GetMaxOutputVoltage()
+            if voltage >= min_volt and voltage <= max_volt:
+                self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
+
+    @property
+    def backlash(self):
+        pass    
+
+    @backlash.setter
+    def backlash(self, backlash: float):
+        pass
+
+
