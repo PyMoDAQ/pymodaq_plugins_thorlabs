@@ -12,7 +12,7 @@ logger = set_logger(get_module_name(__file__))
 
 class DAQ_Move_KPZ101(DAQ_Move_base):
     """
-
+    Wrapper object to access Piezo functionalities, similar to Kinesis instruments 
     """
     _controller_units = 'V'
     _epsilon = 0.0
@@ -39,6 +39,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def ini_stage(self, controller=None):
         """
+        Connect to Kinesis Piezo Stage by communicating with kinesis.py
         """
         self.controller = self.ini_stage_init(controller, Piezo())
 
@@ -58,7 +59,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
             close the current instance of Kinesis instrument.
         """
         if self.controller is not None:
-            self.controller.close()
+            self.controller.disconnect()
 
     def stop_motion(self):
         """
@@ -71,20 +72,20 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def get_actuator_value(self):
         """
-            Get the current hardware position with scaling conversion of the Kinsesis insrument provided by get_position_with_scaling
+            Get the current hardware position with scaling conversion of the Kinsesis instrument provided by get_position_with_scaling
 
             See Also
             --------
             DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
         """
 
-        pos = self.controller.get_position()
-        pos = self.get_position_with_scaling(pos)
+        pos = self.controller.get_voltage()
+        pos = self.get_position_with_scaling(pos) #TODO: Check if this converts voltage to position
         return pos
 
     def move_abs(self, position):
         """
-
+        Set the current position with voltage conversion of the Kinesis instrument 
 
         """
         
@@ -92,7 +93,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self.target_position = position
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_abs(position)
+        self.controller.set_voltage(position) #TODO: Check if self.controller communicates with Piezo(Kinesis)
 
     def move_rel(self, position):
         """
@@ -106,6 +107,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def move_home(self):
         """
+        Move the Kinesis Piezo Stage to home position
         """
         self.controller.SetZero(callback=self.move_done)
 
