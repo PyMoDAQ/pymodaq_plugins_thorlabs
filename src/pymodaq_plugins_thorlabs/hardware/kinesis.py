@@ -147,7 +147,7 @@ class Piezo(Kinesis):
         if serial in serialnumbers_piezo:
             self._device = KCubePiezo.CreateKCubePiezo(serial)
             super().connect(serial)
-            self._device.EnableDevice()
+            self._device.EnableDevice() #TODO: Delete or keep depending if necessary 
             if not (self._device.IsSettingsInitialized()):
                 raise (Exception("no Stage Connected"))
         else:
@@ -166,13 +166,8 @@ class Piezo(Kinesis):
             max_volt = self._device.GetMaxOutputVoltage()
             if voltage >= min_volt and voltage <= max_volt:
                 self._device.SetOutputVoltage(voltage, callback) #check if needs one command or two allowed
+    
 
-    def move_home(self, callback = None):
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = 0
-        self._device.SetZero(callback) 
 
 
 
