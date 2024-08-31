@@ -22,6 +22,8 @@ clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
+import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo 
+import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
@@ -89,7 +91,6 @@ class Kinesis:
 
     def get_position(self):
         raise NotImplementedError
-
 
 class IntegratedStepper(Kinesis):
 
