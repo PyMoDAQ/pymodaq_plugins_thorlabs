@@ -146,7 +146,7 @@ class Piezo(Kinesis):
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
-            self._device = KCubePiezo.CreateKCubePiezo(serial)
+            self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
             super().connect(serial)
             self._device.EnableDevice() #TODO: Delete or keep depending if necessary 
             if not (self._device.IsSettingsInitialized()):
@@ -167,8 +167,13 @@ class Piezo(Kinesis):
             max_volt = self._device.GetMaxOutputVoltage()
             if voltage >= min_volt and voltage <= max_volt:
                 self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
-    
 
+    @property
+    def backlash(self):
+        pass    
 
+    @backlash.setter
+    def backlash(self, backlash: float):
+        pass
 
 
