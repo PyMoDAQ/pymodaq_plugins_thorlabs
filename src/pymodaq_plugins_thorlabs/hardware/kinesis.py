@@ -19,6 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
+
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
@@ -165,7 +166,7 @@ class Piezo(Kinesis):
             min_volt = System.Decimal(0)
             max_volt = self._device.GetMaxOutputVoltage()
             if voltage >= min_volt and voltage <= max_volt:
-                self._device.SetOutputVoltage(voltage, callback) #check if needs one command or two allowed
+                self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
     
 
 
