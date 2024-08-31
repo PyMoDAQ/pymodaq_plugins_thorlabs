@@ -87,6 +87,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
 
         """
+        
         position = self.check_bound(position)
         self.target_position = position
         position = self.set_position_with_scaling(position)
@@ -106,7 +107,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     def move_home(self):
         """
         """
-        self.controller.home(callback=self.move_done)
+        self.controller.SetZero(callback=self.move_done)
 
 
 if __name__ == '__main__':
