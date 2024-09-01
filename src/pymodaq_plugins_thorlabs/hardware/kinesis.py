@@ -23,10 +23,9 @@ clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
-import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo 
-import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
+import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
@@ -158,7 +157,7 @@ class Piezo(Kinesis):
     
     def get_voltage(self):
         voltage = self._device.GetOutputVoltage()
-        return voltage
+        return Decimal.ToDouble(voltage)
     
     def set_voltage(self, voltage : float, callback = None):
         if callback is not None: 
