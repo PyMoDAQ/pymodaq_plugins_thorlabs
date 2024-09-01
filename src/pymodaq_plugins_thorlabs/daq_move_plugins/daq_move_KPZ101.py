@@ -25,6 +25,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_piezo},
               {'title': 'Home Position:', 'name': 'home_position', 'type': 'float', 'value': 0.0, },
+              {'title': 'Get Voltage', 'name': 'get_voltage', 'type': 'float', 'value': 0.0, 'readonly': True},
               ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
 
     def ini_attributes(self):
@@ -77,10 +78,11 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
             --------
             DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
         """
-
-        pos = self.controller.get_voltage()
-        pos = self.get_position_with_scaling(pos) #TODO: Check if this converts voltage to position
+        pos = self.settings['get_voltage']
         return pos
+        # pos = self.controller.get_voltage()
+        # pos = self.get_position_with_scaling(pos) #TODO: Check if this converts voltage to position
+        # return pos
 
     def move_abs(self, position):
         """
