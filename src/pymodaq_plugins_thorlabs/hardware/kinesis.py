@@ -25,6 +25,7 @@ import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
+import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
