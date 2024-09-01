@@ -24,7 +24,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_piezo},
-              {'title': 'Backlash:', 'name': 'backlash', 'type': 'float', 'value': 0, },
+              {'title': 'Home Position:', 'name': 'home_position', 'type': 'float', 'value': 0.0, },
               ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
 
     def ini_attributes(self):
@@ -34,8 +34,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self.settings.child('bounds', 'min_bound').setValue(0)
 
     def commit_settings(self, param):
-        if param.name() == 'backlash':
-            self.controller.backlash = param.value()
+       pass 
 
     def ini_stage(self, controller=None):
         """
@@ -49,7 +48,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         info = self.controller.name
         self.settings.child('controller_id').setValue(info)
 
-        self.controller.backlash = self.settings['backlash']
+        #self.controller.backlash = self.settings['backlash']
 
         initialized = True
         return info, initialized
@@ -59,7 +58,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
             close the current instance of Kinesis instrument.
         """
         if self.controller is not None:
-            self.controller.disconnect()
+            self.Disconnect()
 
     def stop_motion(self):
         """
@@ -109,7 +108,9 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         Move the Kinesis Piezo Stage to home position
         """
-        self.controller.SetZero(callback=self.move_done)
+        home = self.settings['home_position']
+        self.target_position = home
+        self.controller.SetZero(home)
 
 
 if __name__ == '__main__':
