@@ -164,10 +164,12 @@ class Piezo(Kinesis):
             callback = Action[UInt64](callback)
         else: 
             callback = 0 
-            min_volt = System.Decimal(0)
+            min_volt = Decimal(0)
             max_volt = self._device.GetMaxOutputVoltage()
             if voltage >= min_volt and voltage <= max_volt:
                 self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
+    def move_home(self): 
+        self._device.SetZero()
 
     @property
     def backlash(self):
