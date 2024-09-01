@@ -177,4 +177,10 @@ class Piezo(Kinesis):
     def backlash(self, backlash: float):
         pass
 
+    def move_abs(self, position: float, callback=None): #Testing purposes
+        pass
+
+    def move_rel(self, position: float, callback=None): #Testing purposes
+        pass
+
 
