@@ -112,7 +112,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         home = self.settings['home_position']
         self.target_position = home
-        self.controller.SetZero(home)
+        self.controller.move_home(home)
 
 
 if __name__ == '__main__':
