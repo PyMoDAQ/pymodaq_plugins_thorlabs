@@ -1,9 +1,9 @@
 import clr
 import sys
 from os import system
-import System
-from decimal import Decimal
-
+#import System
+#from decimal import Decimal
+from System import Decimal
 from System import Action
 from System import UInt64
 from System import UInt32
@@ -165,9 +165,9 @@ class Piezo(Kinesis):
             callback = Action[UInt64](callback)
         else: 
             callback = 0 
-            min_volt = System.Decimal(0)
-            max_volt = self._device.GetMaxOutputVoltage()
-            if voltage >= min_volt and voltage <= max_volt:
+            min_volt = Decimal(0.0) #TODO: Check is value converts from float to Decimal. 
+            max_volt =Decimal(self._device.GetMaxOutputVoltage())
+            if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
                 self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
     def move_home(self): 
         self._device.SetZero()
