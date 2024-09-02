@@ -19,6 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
 
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
@@ -144,6 +145,7 @@ class Flipper(Kinesis):
 class Piezo(Kinesis):
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
+        self._voltage: GenericPiezo.GenericPiezo = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
@@ -167,7 +169,7 @@ class Piezo(Kinesis):
             min_volt = Decimal(0.0) #TODO: Check is value converts from float to Decimal. 
             max_volt = Decimal(self._device.GetMaxOutputVoltage())
             if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
-                self._device.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
+                self._voltage.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
     def move_home(self): 
         self._device.SetZero()
 
