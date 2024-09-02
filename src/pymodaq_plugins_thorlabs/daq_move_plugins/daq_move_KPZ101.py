@@ -100,8 +100,8 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
 
         """
-        position = self.check_bound(self.get_actuator_value + position) - self.get_actuator_value #TODO: Check if need to replace with self.current_position
-        self.target_position = position + self.get_actuator_value
+        position = self.check_bound(self.current_position + position) - self.current_position #TODO: Check if need to replace with self.get_actuator_value()
+        self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
 
         self.controller.move_rel(position)
