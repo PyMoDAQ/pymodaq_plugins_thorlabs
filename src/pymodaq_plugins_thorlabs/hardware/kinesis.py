@@ -161,30 +161,38 @@ class Piezo(Kinesis):
         voltage = self._device.GetOutputVoltage()
         return Decimal.ToDouble(voltage)
     
-    def set_voltage(self, voltage : float, callback = None):
+    def move_abs(self, voltage : float, callback = None):
         if callback is not None: 
             callback = Action[UInt64](callback)
         else: 
-            callback = 0 
+            callback = UInt64(0) 
             min_volt = Decimal(0.0) #TODO: Check is value converts from float to Decimal. 
-            max_volt = Decimal(self._device.GetMaxOutputVoltage())
+            max_volt = self._device.GetMaxOutputVoltage()
             if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
                 self._voltage.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
     def move_home(self): 
-        self._device.SetZero()
+        self.move_abs(0.0) #Not a precise home value. 
 
-    @property
-    def backlash(self):
-        pass    
+    def move_rel(self, voltage, callback=None): #Testing purposes
+        if callback is not None:
+            callback = Action[UInt64](callback)
+        else:
+            callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
+            voltage = Decimal(self.get_voltage) #TODO: Check if Decimal() is necessary
+        self._device.MoveRelative(Generic.MotorDirection.Forward, voltage, callback)
+    
+    def close(self):
+        self._device.Disconnect()
+    
+    
+    # @property
+    # def backlash(self):
+    #     pass    
 
-    @backlash.setter
-    def backlash(self, backlash: float):
-        pass
+    # @backlash.setter
+    # def backlash(self, backlash: float):
+    #     pass
 
-    def move_abs(self, position: float, callback=None): #Testing purposes
-        pass
-
-    def move_rel(self, position: float, callback=None): #Testing purposes
-        pass
+    
 
 
