@@ -165,7 +165,12 @@ class Piezo(Kinesis):
         else:
             raise ValueError('Invalid Voltage')
 
-    def move_home(self): 
+    def home(self, callback=None):
+        if callback is not None:
+            callback = Action[UInt64](callback)
+        else:
+            callback = 0
+
         self.move_abs(0.0) #Not a precise home value. 
 
     # def move_rel(self, position, callback=None): #Testing purposes
