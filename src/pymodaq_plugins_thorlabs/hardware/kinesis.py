@@ -19,14 +19,14 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
-clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
+# clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
 
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
-import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
+# import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
@@ -158,6 +158,7 @@ class Piezo(Kinesis):
             raise ValueError('Invalid Serial Number')
     
     def move_abs(self, position : float, callback = None):
+        print(f"type of position: {type(position)}")
         if callback is not None: 
             callback = Action[UInt64](callback)
         else: 
@@ -172,13 +173,13 @@ class Piezo(Kinesis):
     def move_home(self): 
         self.move_abs(0.0) #Not a precise home value. 
 
-    def move_rel(self, position, callback=None): #Testing purposes
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
-            position = Decimal(self.get_position) #TODO: Check if Decimal() is necessary
-        self._device.MoveRelative(Generic.MotorDirection.Forward, position, callback)
+    # def move_rel(self, position, callback=None): #Testing purposes
+    #     if callback is not None:
+    #         callback = Action[UInt64](callback)
+    #     else:
+    #         callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
+    #         position = Decimal(self.get_position) #TODO: Check if Decimal() is necessary
+    #     self._device.MoveRelative(Generic.MotorDirection.Forward, position, callback)
 
     def get_position(self):
         voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
