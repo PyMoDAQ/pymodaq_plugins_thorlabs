@@ -110,9 +110,9 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         Move the Kinesis Piezo Stage to home position
         """
-        home = self.settings['home_position']
-        self.target_position = home
-        self.controller.move_home(home)
+        # home = self.settings['home_position']
+        # self.target_position = home
+        # self.controller.move_home(home)
         self.controller.home(callback=self.move_done)
 
 
