@@ -19,14 +19,14 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
-clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
+# clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
 
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
-import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
+# import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
@@ -145,7 +145,7 @@ class Flipper(Kinesis):
 class Piezo(Kinesis):
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
-        self._voltage: GenericPiezo.GenericPiezo = None
+        # self._voltage: GenericPiezo.GenericPiezo = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
@@ -157,32 +157,44 @@ class Piezo(Kinesis):
         else:
             raise ValueError('Invalid Serial Number')
     
-    def get_voltage(self):
-        voltage = self._device.GetOutputVoltage()
-        return Decimal.ToDouble(voltage)
-    
-    def move_abs(self, voltage : float, callback = None):
-        if callback is not None: 
-            callback = Action[UInt64](callback)
-        else: 
-            callback = UInt64(0) 
-            min_volt = Decimal(0.0) #TODO: Check is value converts from float to Decimal. 
-            max_volt = self._device.GetMaxOutputVoltage()
-            if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
-                self._voltage.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
-    def move_home(self): 
-        self.move_abs(0.0) #Not a precise home value. 
+    def move_abs(self, position : float, callback = None):
+        min_volt = 0.0 #TODO: Check is value converts from float to Decimal. 
+        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) # float
+        if position >= min_volt and position <= max_volt:
+            self._device.SetOutputVoltage(Decimal(position)) #TODO: check if needs one command or two allowed
+        else:
+            raise ValueError('Invalid Voltage')
 
-    def move_rel(self, voltage, callback=None): #Testing purposes
+    def home(self, callback=None):
         if callback is not None:
             callback = Action[UInt64](callback)
         else:
-            callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
-            voltage = Decimal(self.get_voltage) #TODO: Check if Decimal() is necessary
-        self._device.MoveRelative(Generic.MotorDirection.Forward, voltage, callback)
+            callback = 0
+
+        self.move_abs(0.0) #Not a precise home value. 
+
+    # def move_rel(self, position, callback=None): #Testing purposes
+    #     if callback is not None:
+    #         callback = Action[UInt64](callback)
+    #     else:
+    #         callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
+    #         position = Decimal(self.get_position) #TODO: Check if Decimal() is necessary
+    #     self._device.MoveRelative(Generic.MotorDirection.Forward, position, callback)
+
+    def get_position(self):
+        voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
+        return voltage
     
-    def close(self):
-        self._device.Disconnect()
+    def stop(self):
+        # FIXME: 
+        """
+        AttributeError: 'KCubePiezo' object has no attribute 'Stop'
+        2024-09-03 10:51:05,442 - pymodaq.pymodaq.daq_move.test - INFO - Motion stoping        
+        """
+        self._device.Stop(0)    
+
+    # def close(self):
+    #     self._device.Disconnect()
     
     
     # @property

@@ -24,8 +24,8 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_piezo},
-              {'title': 'Home Position:', 'name': 'home_position', 'type': 'float', 'value': 0.0, },
-              {'title': 'Get Voltage', 'name': 'get_voltage', 'type': 'float', 'value': 0.0, 'readonly': True},
+            #   {'title': 'Home Position:', 'name': 'home_position', 'type': 'float', 'value': 0.0, },
+            #   {'title': 'Get Voltage', 'name': 'get_voltage', 'type': 'float', 'value': 0.0, 'readonly': True},
               ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
 
     def ini_attributes(self):
@@ -78,11 +78,11 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
             --------
             DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
         """
-        pos = self.settings['get_voltage']
-        return pos
-        # pos = self.controller.get_voltage()
-        # pos = self.get_position_with_scaling(pos) #TODO: Check if this converts voltage to position
+        # pos = self.settings['get_voltage']
         # return pos
+        pos = self.controller.get_position()
+        pos = self.get_position_with_scaling(pos) #TODO: Check if this converts voltage to position
+        return pos
 
     def move_abs(self, position):
         """
@@ -94,7 +94,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self.target_position = position
         position = self.set_position_with_scaling(position)
 
-        self.controller.set_voltage(position) #TODO: Check if self.controller communicates with Piezo(Kinesis)
+        self.controller.move_abs(position) #TODO: Check if self.controller communicates with Piezo(Kinesis)
 
     def move_rel(self, position):
         """
@@ -104,15 +104,16 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self.target_position = position + self.current_position
         position = self.set_position_relative_with_scaling(position)
 
-        self.controller.move_rel(position)
+        self.controller.move_abs(self.target_position)
 
     def move_home(self):
         """
         Move the Kinesis Piezo Stage to home position
         """
-        home = self.settings['home_position']
-        self.target_position = home
-        self.controller.move_home(home)
+        # home = self.settings['home_position']
+        # self.target_position = home
+        # self.controller.move_home(home)
+        self.controller.home(callback=self.move_done)
 
 
 if __name__ == '__main__':
