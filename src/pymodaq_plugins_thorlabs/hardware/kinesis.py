@@ -145,7 +145,7 @@ class Flipper(Kinesis):
 class Piezo(Kinesis):
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
-        self._voltage: GenericPiezo.GenericPiezo = None
+        # self._voltage: GenericPiezo.GenericPiezo = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
@@ -163,20 +163,22 @@ class Piezo(Kinesis):
         else: 
             callback = UInt64(0) 
             min_volt = 0.0 #TODO: Check is value converts from float to Decimal. 
-            max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage())
-            if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
-                self._voltage.SetOutputVoltage(Decimal(position), callback) #TODO: check if needs one command or two allowed
+            max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) # float
+            if position >= min_volt and position <= max_volt:
+                self._device.SetOutputVoltage(Decimal(position), callback) #TODO: check if needs one command or two allowed
+            else:
+                raise ValueError('Invalid Voltage')
 
     def move_home(self): 
         self.move_abs(0.0) #Not a precise home value. 
 
-    def move_rel(self, voltage, callback=None): #Testing purposes
+    def move_rel(self, position, callback=None): #Testing purposes
         if callback is not None:
             callback = Action[UInt64](callback)
         else:
             callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
-            voltage = Decimal(self.get_voltage) #TODO: Check if Decimal() is necessary
-        self._device.MoveRelative(Generic.MotorDirection.Forward, voltage, callback)
+            position = Decimal(self.get_position) #TODO: Check if Decimal() is necessary
+        self._device.MoveRelative(Generic.MotorDirection.Forward, position, callback)
 
     def get_position(self):
         voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
