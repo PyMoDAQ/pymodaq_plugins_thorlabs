@@ -157,19 +157,16 @@ class Piezo(Kinesis):
         else:
             raise ValueError('Invalid Serial Number')
     
-    def get_voltage(self):
-        voltage = self._device.GetOutputVoltage()
-        return Decimal.ToDouble(voltage)
-    
-    def move_abs(self, voltage : float, callback = None):
+    def move_abs(self, position : float, callback = None):
         if callback is not None: 
             callback = Action[UInt64](callback)
         else: 
             callback = UInt64(0) 
-            min_volt = Decimal(0.0) #TODO: Check is value converts from float to Decimal. 
-            max_volt = self._device.GetMaxOutputVoltage()
+            min_volt = 0.0 #TODO: Check is value converts from float to Decimal. 
+            max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage())
             if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
-                self._voltage.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
+                self._voltage.SetOutputVoltage(Decimal(position), callback) #TODO: check if needs one command or two allowed
+
     def move_home(self): 
         self.move_abs(0.0) #Not a precise home value. 
 
@@ -180,9 +177,13 @@ class Piezo(Kinesis):
             callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
             voltage = Decimal(self.get_voltage) #TODO: Check if Decimal() is necessary
         self._device.MoveRelative(Generic.MotorDirection.Forward, voltage, callback)
-    
-    def close(self):
-        self._device.Disconnect()
+
+    def get_position(self):
+        voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
+        return voltage
+
+    # def close(self):
+    #     self._device.Disconnect()
     
     
     # @property
