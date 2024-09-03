@@ -184,6 +184,14 @@ class Piezo(Kinesis):
     def get_position(self):
         voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
         return voltage
+    
+    def stop(self):
+        # FIXME: 
+        """
+        AttributeError: 'KCubePiezo' object has no attribute 'Stop'
+        2024-09-03 10:51:05,442 - pymodaq.pymodaq.daq_move.test - INFO - Motion stoping        
+        """
+        self._device.Stop(0)    
 
     # def close(self):
     #     self._device.Disconnect()
