@@ -170,6 +170,7 @@ class Piezo(Kinesis):
             max_volt = self._device.GetMaxOutputVoltage()
             if Decimal(voltage) >= min_volt and Decimal(voltage) <= max_volt:
                 self._voltage.SetOutputVoltage(voltage, callback) #TODO: check if needs one command or two allowed
+    
     def move_home(self): 
         self.move_abs(0.0) #Not a precise home value. 
 
