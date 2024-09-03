@@ -87,7 +87,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     def move_abs(self, position):
         """
         Set the current position with voltage conversion of the Kinesis instrument 
-
         """
         
         position = self.check_bound(position)
@@ -98,7 +97,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def move_rel(self, position):
         """
-
+        Moves the Kinesis Piezo Stage relatively to the current position. 
         """
         position = self.check_bound(self.current_position + position) - self.current_position #TODO: Check if need to replace with self.get_actuator_value()
         self.target_position = position + self.current_position
