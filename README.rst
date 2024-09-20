@@ -37,6 +37,7 @@ Actuators
 * **Kinesis_Flipper**: Kinesis series Flipper
 * **MFF101_pylablib**: Kinesis series Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
+* **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 
 Viewer0D
 ++++++++
@@ -52,3 +53,5 @@ Viewer2D
 * **Scientific cameras**: sCMOS camera series Zelux, Kiralux, Quantalux. Implemented using the pylablib control module.
   Required libraries are installed using the free `ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
   The plugin assumes Thorcam is installed in default folder (see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
+
+
