@@ -48,10 +48,21 @@ Viewer0D
 Viewer2D
 ++++++++
 
-* **DCx cameras**: Tested with DCC3240M. Works with Windows. Precise installation instructions can be found here:
-  https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the plugin file.
-* **Scientific cameras**: sCMOS camera series Zelux, Kiralux, Quantalux. Implemented using the pylablib control module.
-  Required libraries are installed using the free `ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
-  The plugin assumes Thorcam is installed in default folder (see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
+* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M.
+* **Thorlabs_TSI**: sCMOS camera series Zelux, Kiralux, Quantalux.
 
+Installation instructions
+=========================
 
+Thorlabs_DCx
+++++++++++++
+Works with Windows. Precise installation instructions can be found here:
+https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the plugin file.
+
+Scientific cameras
+++++++++++++++++++
+Implemented using the pylablib control module.
+ Required libraries are installed using the free
+`ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
+The plugin assumes Thorcam is installed in default folder
+(see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
