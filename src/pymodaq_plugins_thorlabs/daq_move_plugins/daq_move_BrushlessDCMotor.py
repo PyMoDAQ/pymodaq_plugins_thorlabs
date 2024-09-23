@@ -20,10 +20,10 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
          hardware library.
 
     """
-    _controller_units = 'mm'
+    _controller_units = BrushlessDCMotor.default_units
     is_multiaxes = True
     _axes_names = {'1': 1, '2': 2, '3': 3}
-    _epsilon = 0.001
+    _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
@@ -61,11 +61,10 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-            self.controller.your_method_to_apply_this_param_change()
-        else:
-            pass
+        if param.name() == 'axis':
+            self.axis_unit = self.controller.get_units(self.axis_value)
+            # update the units are they are not known before hand in the driver class but only
+            # after initialization of the controller
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -87,6 +86,12 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
             self.controller.connect(self.settings['serial_number'])
         else:
             self.controller = controller
+
+        # update the axis unit by interogating the controller and the specific axis
+        self.axis_unit = self.controller.get_units(self.axis_value)
+
+        if not self.controller.is_homed(self.axis_value):
+            self.move_home()
 
         info = f'{self.controller.name} - {self.controller.serial_number}'
         initialized = True
@@ -120,7 +125,7 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
     def move_home(self):
         """Call the reference method of the controller"""
 
-        self.controller.home(self.axis_value)
+        self.controller.home(channel=self.axis_value)
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""

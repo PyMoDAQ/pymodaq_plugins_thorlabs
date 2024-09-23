@@ -34,6 +34,8 @@ serialnumbers_brushless = [str(ser) for ser in Device.DeviceManagerCLI.GetDevice
 
 class Kinesis:
 
+    default_units = ''
+
     def __init__(self):
         self._device = None
 
@@ -84,6 +86,8 @@ class Kinesis:
             callback = 0
         self._device.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), callback)
 
+
+
     def home(self, callback=None):
         if callback is not None:
             callback = Action[UInt64](callback)
@@ -98,9 +102,26 @@ class Kinesis:
     def get_position(self, **kwargs):
         raise NotImplementedError
 
+    def get_target_position(self, *args, **kwargs) -> float:
+        return Decimal.ToDouble(self._device.get_TargetPosition())
+
+    def get_units(self, *args, **kwargs) -> str:
+        """ Get the stage units from the controller
+
+        :return:
+        """
+        try:
+            units = self._device.get_UnitConverter().RealUnits
+        except Exception:
+            units = self.default_units
+        return units
+
 
 class IntegratedStepper(Kinesis):
     """ Specific Kinesis class for Integrated Stepper motor"""
+
+    default_units = '°'
+
     def __init__(self):
         super().__init__()
         self._device: Integrated.CageRotator = None
@@ -119,12 +140,16 @@ class IntegratedStepper(Kinesis):
     def get_position(self, **kwargs):
         return Decimal.ToDouble(self._device.ContinuousRotationPosition)
 
+    def get_units(self, *args, **kwargs) -> str:
+        return super().get_units()
+
 
 class BrushlessMotorChannel(Kinesis):
     properties = ['MaxPosition', 'MinPosition',
                   'MaxAcceleration', 'MaxDecceleration',
                   'MaxVelocity']
-    units = 'mm'
+
+    default_units = 'mm'
 
     def __init__(self, controller_device: BrushlessMotorCLI.BenchtopBrushlessMotor,
                  channel_index=1):
@@ -155,12 +180,13 @@ class BrushlessMotorChannel(Kinesis):
         self._device.EnableDevice()
 
     def get_position(self) -> float:
-        return Decimal.ToDouble(self._device.Position)
+        return Decimal.ToDouble(self._device.get_DevicePosition())
 
 
 class BrushlessDCMotor(Kinesis):
     """ Specific Kinesis class for Brushless DC Motors"""
     n_channels = 3
+    default_units = 'mm'
 
     def __init__(self):
         super().__init__()
@@ -194,15 +220,11 @@ class BrushlessDCMotor(Kinesis):
             channel.close()
         self._device.Disconnect()
 
-    def get_units(self, channel: int = 1):
-        return self._channels[channel].units
-
-    def home(self, callback=None, channel: int = 1):
+    def home(self, channel: int = 1, callback=None):
         if channel not in self._channels:
             self.init_channel(channel)
         self._channels[channel].home(callback)
 
-    @property
     def is_homed(self, channel: int = 1) -> bool:
         if channel not in self._channels:
             self.init_channel(channel)
@@ -213,9 +235,24 @@ class BrushlessDCMotor(Kinesis):
             self.init_channel(channel)
         self._channels[channel].stop()
 
+    def get_units(self, channel: int = 1) -> str:
+        """ Get the stage units from the controller
+        """
+        if channel not in self._channels:
+            self.init_channel(channel)
+        return self._channels[channel].get_units()
+
+    def get_target_position(self, channel: int = 1) -> float:
+        if channel not in self._channels:
+            self.init_channel(channel)
+        return self._channels[channel].get_target_position()
+
 
 class Flipper(Kinesis):
     """ Specific Kinesis class for Flipper"""
+
+    default_units = ''
+
     def __init__(self):
         super().__init__()
         self._device: FilterFlipper.FilterFlipper = None
@@ -249,4 +286,7 @@ if __name__ == '__main__':
     controller = BrushlessDCMotor()
     controller.connect(serialnumbers_brushless[0])
     motor = controller.init_channel(1)
+    print(motor.get_units())
+    motor.home()
+    print(motor.get_target_position())
     controller.close()
