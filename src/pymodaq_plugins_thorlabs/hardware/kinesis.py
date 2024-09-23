@@ -103,7 +103,7 @@ class Kinesis:
         raise NotImplementedError
 
     def get_target_position(self, *args, **kwargs) -> float:
-        return Decimal.ToDouble(self._device.get_TargetPosition())
+        return Decimal.ToDouble(self._device.Position)
 
     def get_units(self, *args, **kwargs) -> str:
         """ Get the stage units from the controller
