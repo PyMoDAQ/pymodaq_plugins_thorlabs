@@ -72,6 +72,9 @@ class Kinesis:
     def stop(self):
         self._device.Stop(0)
 
+    def move_done_callback(self, val: int):
+        print('move done')
+
     def move_abs(self, position: float, callback=None, **kwargs):
         if callback is not None:
             callback = Action[UInt64](callback)
@@ -86,8 +89,6 @@ class Kinesis:
             callback = 0
         self._device.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), callback)
 
-
-
     def home(self, callback=None):
         if callback is not None:
             callback = Action[UInt64](callback)
@@ -99,6 +100,14 @@ class Kinesis:
     def is_homed(self) -> bool:
         return self._device.Status.IsHomed
 
+    @property
+    def is_moving(self) -> bool:
+        return self._device.Status.IsInMotion
+
+    @property
+    def is_homing(self) -> bool:
+        return self._device.Status.IsHoming
+
     def get_position(self, **kwargs):
         raise NotImplementedError
 
@@ -108,7 +117,6 @@ class Kinesis:
     def get_units(self, *args, **kwargs) -> str:
         """ Get the stage units from the controller
 
-        :return:
         """
         try:
             units = self._device.get_UnitConverter().RealUnits
@@ -288,5 +296,13 @@ if __name__ == '__main__':
     motor = controller.init_channel(1)
     print(motor.get_units())
     motor.home()
+    print(f'homing: {motor.is_homing}')
+    print(f'Moving: {motor.is_moving}')
     print(motor.get_target_position())
+
+    motor.move_abs(87, motor.move_done_callback)
+    print(f'homing: {motor.is_homing}')
+    print(f'Moving: {motor.is_moving}')
+    print(motor.get_target_position())
+
     controller.close()
