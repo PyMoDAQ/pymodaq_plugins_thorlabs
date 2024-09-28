@@ -1,8 +1,6 @@
 import clr
 import sys
 from os import system
-#import System
-#from decimal import Decimal
 from System import Decimal
 from System import Action
 from System import UInt64
@@ -19,14 +17,12 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
-# clr.AddReference("Thorlabs.MotionControl.GenericPiezoCLI")
 
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
-# import Thorlabs.MotionControl.GenericPiezoCLI as GenericPiezo
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 
@@ -146,23 +142,23 @@ class Piezo(Kinesis):
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
         self._connect = None
-        # self._voltage: GenericPiezo.GenericPiezo = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
             self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
             super().connect(serial)
-            self._device.EnableDevice() #TODO: Delete or keep depending if necessary 
+            self._device.EnableDevice() 
             if not (self._device.IsSettingsInitialized()):
                 raise (Exception("no Stage Connected"))
         else:
             raise ValueError('Invalid Serial Number')
     
     def move_abs(self, position : float, callback = None):
-        min_volt = 0.0 #TODO: Check is value converts from float to Decimal. 
-        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) # float
+        min_volt = 0.0 
+        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) 
+        print('Max Voltage:', max_volt)
         if position >= min_volt and position <= max_volt:
-            self._device.SetOutputVoltage(Decimal(position)) #TODO: check if needs one command or two allowed
+           self._device.SetOutputVoltage(Decimal(position)) 
         else:
             raise ValueError('Invalid Voltage')
 
@@ -172,34 +168,15 @@ class Piezo(Kinesis):
         else:
             callback = 0
 
-        self.move_abs(0.0) #Not a precise home value. 
-
-    # def move_rel(self, position, callback=None): #Testing purposes
-    #     if callback is not None:
-    #         callback = Action[UInt64](callback)
-    #     else:
-    #         callback = Decimal(0.0) #TODO: Check if this is the correct value for no callback
-    #         position = Decimal(self.get_position) #TODO: Check if Decimal() is necessary
-    #     self._device.MoveRelative(Generic.MotorDirection.Forward, position, callback)
+        self.move_abs(0.0)
 
     def get_position(self):
         voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
         return voltage
     
     def stop(self):
-        # FIXME: 
-        """       
-        """
-        self._connect.Stop(0)    
+        pass   
 
     def close(self):
         self._device.Disconnect()
     
-    
-    # @property
-    # def backlash(self):
-    #     pass    
-
-    # @backlash.setter
-    # def backlash(self, backlash: float):
-    #     pass
