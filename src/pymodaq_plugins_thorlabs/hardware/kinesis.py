@@ -1,6 +1,5 @@
 import clr
 import sys
-from os import system
 from typing import Dict
 
 from System import Decimal
@@ -18,22 +17,18 @@ clr.AddReference("Thorlabs.MotionControl.IntegratedStepperMotorsCLI")
 clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
-clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
-
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
-import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
 serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 serialnumbers_brushless = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 
 
@@ -293,50 +288,6 @@ class Flipper(Kinesis):
         else:
             position = 1
         return position
-
-
-class Piezo(Kinesis):
-    def __init__(self):
-        self._device: KCubePiezo.KCubePiezo = None
-        self._connect = None
-
-    def connect(self, serial: int):
-        if serial in serialnumbers_piezo:
-            self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
-            super().connect(serial)
-            self._device.EnableDevice() 
-            if not (self._device.IsSettingsInitialized()):
-                raise (Exception("no Stage Connected"))
-        else:
-            raise ValueError('Invalid Serial Number')
-    
-    def move_abs(self, position : float, callback = None):
-        min_volt = 0.0 
-        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) 
-        print('Max Voltage:', max_volt)
-        if position >= min_volt and position <= max_volt:
-           self._device.SetOutputVoltage(Decimal(position)) 
-        else:
-            raise ValueError('Invalid Voltage')
-
-    def home(self, callback=None):
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = 0
-
-        self.move_abs(0.0)
-
-    def get_position(self):
-        voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
-        return voltage
-    
-    def stop(self):
-        pass   
-
-    def close(self):
-        self._device.Disconnect()
-    
 
 
 if __name__ == '__main__':
