@@ -37,6 +37,7 @@ Actuators
 * **Kinesis_Flipper**: Kinesis series Flipper
 * **MFF101_pylablib**: Kinesis series Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
+* **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 * **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
 
 Viewer0D
@@ -48,8 +49,21 @@ Viewer0D
 Viewer2D
 ++++++++
 
-* **DCx cameras**: Tested with DCC3240M. Works with Windows. Precise installation instructions can be found here:
-  https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the plugin file.
-* **Scientific cameras**: sCMOS camera series Zelux, Kiralux, Quantalux. Implemented using the pylablib control module.
-  Required libraries are installed using the free `ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
-  The plugin assumes Thorcam is installed in default folder (see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
+* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M.
+* **Thorlabs_TSI**: sCMOS camera series Zelux, Kiralux, Quantalux.
+
+Installation instructions
+=========================
+
+Thorlabs_DCx
+++++++++++++
+Works with Windows. Precise installation instructions can be found here:
+https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the plugin file.
+
+Scientific cameras
+++++++++++++++++++
+Implemented using the pylablib control module.
+ Required libraries are installed using the free
+`ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
+The plugin assumes Thorcam is installed in default folder
+(see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
