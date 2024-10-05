@@ -40,14 +40,26 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         self.controller = self.ini_stage_init(controller, Piezo())
 
-        if self.settings['multiaxes', 'multi_status'] == "Master":
-            self.controller.connect(self.settings['serial_number'])
+        try :
+            self.controller.connect(self.settings.child('serial_number').value())
+        except Exception as e:
+            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
 
-        info = self.controller.name
-        self.settings.child('controller_id').setValue(info)
-
-
-        initialized = True
+        # if self.settings['multiaxes', 'multi_status'] == "Master":
+        #     self.controller.connect(self.settings(['serial_number']))
+        try: 
+            info = self.controller.name
+            self.settings.child('controller_id').setValue(info)
+        except Exception as e:
+            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
+        # info = self.controller.name
+        # self.settings.child('controller_id').setValue(info)
+        try:
+            initialized = True
+        except Exception as e:
+            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
+            initialized = False
+        # initialized = True
         return info, initialized
 
     def close(self):
