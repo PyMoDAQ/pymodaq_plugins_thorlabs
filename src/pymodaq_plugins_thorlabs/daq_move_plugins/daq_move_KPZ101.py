@@ -24,7 +24,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_piezo},
-              ] + comon_parameters_fun(is_multiaxes,axes_names=_axes_names, epsilon=_epsilon)
+              ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
 
     def ini_attributes(self):
         try:
