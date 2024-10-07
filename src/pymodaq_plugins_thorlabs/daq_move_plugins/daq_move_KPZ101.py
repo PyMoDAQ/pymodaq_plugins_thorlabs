@@ -1,6 +1,6 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType, DataActuator
-from pymodaq.utils.daq_utils import ThreadCommand
-from pymodaq.utils.parameter import Parameter
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType
+#from pymodaq.utils.daq_utils import ThreadCommand
+#from pymodaq.utils.parameter import Parameter
 from pymodaq.utils.logger import set_logger, get_module_name
 
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
@@ -19,6 +19,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
     data_actuator_type = DataActuatorType.DataActuator
 
     is_multiaxes = False
+    logger.error('This plugin is not yet compatible with multi-axes')
 
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
@@ -26,10 +27,13 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
               ] + comon_parameters_fun(is_multiaxes,axes_names=_axes_names, epsilon=_epsilon)
 
     def ini_attributes(self):
-        self.controller: Piezo = None
-        self.settings.child('bounds', 'is_bounds').setValue(True)
-        self.settings.child('bounds', 'max_bound').setValue(360)
-        self.settings.child('bounds', 'min_bound').setValue(0)
+        try:
+            self.controller: Piezo = None
+            self.settings.child('bounds', 'is_bounds').setValue(True)
+            self.settings.child('bounds', 'max_bound').setValue(360)
+            self.settings.child('bounds', 'min_bound').setValue(0)
+        except Exception as e: 
+            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_attributes')
 
     def commit_settings(self, param):
        pass 
