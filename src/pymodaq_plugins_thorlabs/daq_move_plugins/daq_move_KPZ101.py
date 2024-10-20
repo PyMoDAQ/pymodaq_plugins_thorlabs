@@ -10,7 +10,7 @@ from pymodaq.utils.logger import set_logger, get_module_name
 logger = set_logger(get_module_name(__file__))
 
 
-class DAQ_Move_Piezo(DAQ_Move_base):
+class DAQ_Move_KPZ101(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
 
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
@@ -25,7 +25,7 @@ class DAQ_Move_Piezo(DAQ_Move_base):
     """
     _controller_units = Piezo.default_units
     is_multiaxes = True
-    _axes_names = {'1': 1, '2': 2, '3': 3}
+    _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
@@ -63,8 +63,8 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(
-            data=self.controller.get_position(self.axis_value),
-            units=self.controller.get_units(self.axis_value)
+            data=self.controller.get_position(),
+            units=self.controller.get_units()
         )
         pos = self.get_position_with_scaling(pos)
         return pos
@@ -111,8 +111,8 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         # update the axis unit by interogating the controller and the specific axis
         self.axis_unit = self.controller.get_units(self.axis_value)
 
-        if not self.controller.is_homed(self.axis_value):
-            self.move_home()
+        # if not self.controller.is_homed(self.axis_value):
+        #     self.move_home()
 
         info = f'{self.controller.name} - {self.controller.serial_number}'
         initialized = True
