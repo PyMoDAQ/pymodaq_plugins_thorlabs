@@ -14,7 +14,7 @@ pymodaq_plugins_thorlabs (Thorlabs Instruments)
    :alt: Publication Status
 
 Set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10CR1 (stepper rotation actuator), Kinesis Flipper,
-Kinesis KSP100, Camera DCx, Scientific cameras, Powermeters using the TLPM library)
+Kinesis KSP100, Kinesis KPZ101, Camera DCx, Scientific cameras, Powermeters using the TLPM library)
 
 
 Authors
@@ -38,6 +38,8 @@ Actuators
 * **MFF101_pylablib**: Kinesis series Flipper mount (thorlabs MFF101), similar to **Kinesis_FLipper** but using the pylablib control module.
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
 * **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
+* **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
+
 
 Viewer0D
 ++++++++
