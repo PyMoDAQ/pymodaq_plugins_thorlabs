@@ -38,23 +38,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self.controller: Piezo = None
         self._move_done = False
 
-    def move_done_callback(self, val: int):
-        """ will be triggered for each end of move: abs, rel or homing"""
-        self._move_done = True
-        self.stop_motion()
-        logger.debug('Callback called')
-
-    def user_condition_to_reach_target(self) -> bool:
-        """ Implement a condition for exiting the polling mechanism and specifying that the
-        target value has been reached
-
-       Returns
-        -------
-        bool: if True, PyMoDAQ considers the target value has been reached
-        """
-
-        return self._move_done
-
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
 
@@ -139,15 +122,15 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         value: (float) value of the relative target positioning
         """
         self._move_done = False
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
         self.controller.move_abs(self.target_value.value())
 
     def move_home(self):
         """Call the reference method of the controller"""
         self._move_done = False
-        self.controller.home(callback=self.move_done_callback)
+        self.controller.home()
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
