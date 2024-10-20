@@ -10,7 +10,7 @@ from pymodaq.utils.logger import set_logger, get_module_name
 logger = set_logger(get_module_name(__file__))
 
 
-class DAQ_Move_Piezo(DAQ_Move_base):
+class DAQ_Move_KPZ101(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
 
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
@@ -25,7 +25,7 @@ class DAQ_Move_Piezo(DAQ_Move_base):
     """
     _controller_units = Piezo.default_units
     is_multiaxes = True
-    _axes_names = {'1': 1, '2': 2, '3': 3}
+    _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
@@ -38,23 +38,6 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         self.controller: Piezo = None
         self._move_done = False
 
-    def move_done_callback(self, val: int):
-        """ will be triggered for each end of move: abs, rel or homing"""
-        self._move_done = True
-        self.stop_motion()
-        logger.debug('Callback called')
-
-    def user_condition_to_reach_target(self) -> bool:
-        """ Implement a condition for exiting the polling mechanism and specifying that the
-        target value has been reached
-
-       Returns
-        -------
-        bool: if True, PyMoDAQ considers the target value has been reached
-        """
-
-        return self._move_done
-
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
 
@@ -63,8 +46,8 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(
-            data=self.controller.get_position(self.axis_value),
-            units=self.controller.get_units(self.axis_value)
+            data=self.controller.get_position(),
+            units=self.controller.get_units()
         )
         pos = self.get_position_with_scaling(pos)
         return pos
@@ -111,8 +94,8 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         # update the axis unit by interogating the controller and the specific axis
         self.axis_unit = self.controller.get_units(self.axis_value)
 
-        if not self.controller.is_homed(self.axis_value):
-            self.move_home()
+        # if not self.controller.is_homed(self.axis_value):
+        #     self.move_home()
 
         info = f'{self.controller.name} - {self.controller.serial_number}'
         initialized = True
@@ -139,15 +122,15 @@ class DAQ_Move_Piezo(DAQ_Move_base):
         value: (float) value of the relative target positioning
         """
         self._move_done = False
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
         self.controller.move_abs(self.target_value.value())
 
     def move_home(self):
         """Call the reference method of the controller"""
         self._move_done = False
-        self.controller.home(callback=self.move_done_callback)
+        self.controller.home()
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
