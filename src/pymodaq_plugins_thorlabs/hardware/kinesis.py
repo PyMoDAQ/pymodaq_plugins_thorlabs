@@ -295,47 +295,45 @@ class Flipper(Kinesis):
 
 
 class Piezo(Kinesis):
+    default_units = 'V'
+
     def __init__(self):
         self._device: KCubePiezo.KCubePiezo = None
-        self._connect = None
 
     def connect(self, serial: int):
         if serial in serialnumbers_piezo:
-            self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
-            super().connect(serial)
+            self._device = (
+                KCubePiezo.KCubePiezo.CreateKCubePiezo(serial))
+            self._device.Connect(serial)
+            self._device.StartPolling(250)
             self._device.EnableDevice()
-            if not (self._device.IsSettingsInitialized()):
-                raise (Exception("no Stage Connected"))
+            self._device.GetPiezoConfiguration(serial)
         else:
             raise ValueError('Invalid Serial Number')
 
-    def move_abs(self, position: float, callback=None):
-        min_volt = 0.0
-        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage())
-        print('Max Voltage:', max_volt)
-        if position >= min_volt and position <= max_volt:
-            self._device.SetOutputVoltage(Decimal(position))
-        else:
-            raise ValueError('Invalid Voltage')
+    def move_abs(self, position: float):
+        self._device.SetOutputVoltage(Decimal(position))
+        # min_volt = 0.0
+        # max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage())
+        # # print('Max Voltage:', max_volt)
+        # if position >= min_volt and position <= max_volt:
+        #     self._device.SetOutputVoltage(Decimal(position))
+        # else:
+        #     raise ValueError('Invalid Voltage')
 
-    def home(self, callback=None):
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = 0
+    def home(self):
+        # if callback is not None:
+        #     callback = Action[UInt64](callback)
+        # else:
+        #     callback = 0
 
         self.move_abs(0.0)
 
-    def get_position(self):
-        voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
-        return voltage
+    def get_position(self) -> float:
+        return Decimal.ToDouble(self._device.GetOutputVoltage())
 
     def stop(self):
         pass
-
-    def close(self):
-        self._device.Disconnect()
-
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
