@@ -1,9 +1,7 @@
 from pymodaq.control_modules.move_utility_classes import (
     DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator)
 from pymodaq.utils.daq_utils import ThreadCommand
-
 from pymodaq.utils.parameter import Parameter
-
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
 from pymodaq.utils.logger import set_logger, get_module_name
 
@@ -67,8 +65,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         if param.name() == 'axis':
             self.axis_unit = self.controller.get_units(self.axis_value)
-            # update the units are they are not known before hand in the driver class but only
-            # after initialization of the controller
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -91,11 +87,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         else:
             self.controller = controller
 
-        # update the axis unit by interogating the controller and the specific axis
         self.axis_unit = self.controller.get_units(self.axis_value)
-
-        # if not self.controller.is_homed(self.axis_value):
-        #     self.move_home()
 
         info = f'{self.controller.name} - {self.controller.serial_number}'
         initialized = True
@@ -111,7 +103,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         self._move_done = False
         value = self.check_bound(value)
         self.target_value = value
-        value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
+        value = self.set_position_with_scaling(value) 
         self.controller.move_abs(value.value())
 
     def move_rel(self, value: DataActuator):
@@ -134,7 +126,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
-
         self.controller.stop()
 
 
