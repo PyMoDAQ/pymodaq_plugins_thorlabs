@@ -62,7 +62,7 @@ https://instrumental-lib.readthedocs.io/en/stable/uc480-cameras.html and in the 
 Scientific cameras
 ++++++++++++++++++
 Implemented using the pylablib control module.
- Required libraries are installed using the free
+Required libraries are installed using the free
 `ThorCam <https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=ThorCam>`__ software.
 The plugin assumes Thorcam is installed in default folder
 (see `details here <https://pylablib.readthedocs.io/en/stable/devices/Thorlabs_TLCamera.html>`__). Tested on Zelux camera on Windows.
