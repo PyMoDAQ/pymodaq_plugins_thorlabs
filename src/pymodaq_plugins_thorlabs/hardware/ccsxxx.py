@@ -5,7 +5,10 @@ import ctypes
 
 # DK load dll file
 dll_path = r"C:\Program Files\IVI Foundation\VISA\Win64\Bin\TLCCS_64.dll"
-ccs_dll = ctypes.CDLL(dll_path)
+# lib = ctypes.CDLL(dll_path)
+lib = ctypes.cdll.LoadLibrary(dll_path)
+ccs_handle=c_int(0)
+
 resource_name = " "
 
 
@@ -14,11 +17,11 @@ class CCSXXX:
             self.dll_path = dll_path
             self.resource_name = resource_name.encode('')
             self.handle = ctypes.c_int()
-            self.ccs_dll = ctypes.CDLL(dll_path)
+            self.lib = ctypes.CDLL(dll_path)
             self.connect_device()
 #initialization of spectrometer#
-    def connect_device(self):
-        init_func = self.ccs_dll.TLCCS_init
+    def connect(self):
+        init_func = self.lib.TLCCS_init
         init_func.restype = ctypes.c_int
         init_func.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
 
@@ -28,7 +31,7 @@ class CCSXXX:
             raise Exception(f"Error initializing spectrometer: {status}")
     #def close
        def close_device(self):
-            close_func = self.ccs_dll.TLCCS_close
+            close_func = self.lib.TLCCS_close
             close_func.restype = ctypes.c_int
             close_func.argtypes = [ctypes.c_int]
 
@@ -39,7 +42,7 @@ class CCSXXX:
 
         # set the integration time
      def set_integration_time(self, integration_time):
-        set_integration_time_func = self.ccs_dll.TLCCS_setIntegrationTime
+        set_integration_time_func = self.lib.TLCCS_setIntegrationTime
         set_integration_time_func.restype = ctypes.c_int
         set_integration_time_func.argtypes = [ctypes.c_int, ctypes.c_double]
         status = set_integration_time_func(self.handle, ctypes.c_double(integration_time))
@@ -50,7 +53,7 @@ class CCSXXX:
 
     # start scanning i.e., expose the CCD via the monochrometer
     def start_scanning(self):
-            start_scan_func = self.ccs_dll.TLCCS_startScan
+            start_scan_func = self.lib.TLCCS_startScan
             start_scan_func.restype = ctypes.c_int
             start_scan_func.argtypes = [ctypes.c_int]
             status = start_scan_func(self.handle)
@@ -60,7 +63,7 @@ class CCSXXX:
 
     # get the wavelength calibration coefficients
     def wavelength_calibration(self, calibration_points):
-        set_calibration_func = self.ccs_dll.TLCCS_setWavelengthCalibration
+        set_calibration_func = self.lib.TLCCS_setWavelengthCalibration
         set_calibration_func.restype = ctypes.c_int
         set_calibration_func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int]
          num_points = len(calibration_points)
@@ -72,7 +75,7 @@ class CCSXXX:
 
     # get the data array i.e., a spectrum
     def acquire_spectrum(self):
-            get_spectrum_func = self.ccs_dll.TLCCS_getSpectrum
+            get_spectrum_func = self.lib.TLCCS_getSpectrum
             get_spectrum_func.restype = ctypes.c_int
             get_spectrum_func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int]
              spectrum = (ctypes.c_double * )()
