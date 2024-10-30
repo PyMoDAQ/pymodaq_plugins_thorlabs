@@ -76,7 +76,7 @@ def error_handling(default_arg=None):
                 ret = func(*args, **kwargs)
                 return ret
             except Exception as e:
-                logger.exception(f'The function {func.__name__} returned the error: {e}')
+                logger.debug(f'The function {func.__name__} returned the error: {e}')
                 return default_arg
         return wrapper
     return error_management
