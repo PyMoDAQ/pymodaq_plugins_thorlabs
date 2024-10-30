@@ -9,18 +9,22 @@ dll_path = r"C:\Program Files\IVI Foundation\VISA\Win64\Bin\TLCCS_64.dll"
 lib = ctypes.cdll.LoadLibrary(dll_path)
 ccs_handle=c_int(0)
 
-resource_name = " "
+# resource_name = " "
 
 
 class CCSXXX:
-    def __init__(self,dll_path,resource_name):
-            self.dll_path = dll_path
-            self.resource_name = resource_name.encode('')
-            self.handle = ctypes.c_int()
-            self.lib = ctypes.CDLL(dll_path)
-            self.connect_device()
-#initialization of spectrometer#
+    def __init__(self, resource_name):
+        self._device = None
+        self.resource_name = resource_name
+
     def connect(self):
+        self.dll_path = dll_path
+        self.resource_name = resource_name.encode('')
+        self.handle = ctypes.c_int()
+        self.lib = ctypes.CDLL(dll_path)
+        self.connect_device()
+
+
         init_func = self.lib.TLCCS_init
         init_func.restype = ctypes.c_int
         init_func.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
