@@ -7,7 +7,7 @@ import ctypes
 dll_path = r"C:\Program Files\IVI Foundation\VISA\Win64\Bin\TLCCS_64.dll"
 # lib = ctypes.CDLL(dll_path)
 lib = ctypes.cdll.LoadLibrary(dll_path)
-ccs_handle=c_int(0)
+ccs_handle=ctypes.c_int(0)
 
 # resource_name = " "
 
@@ -18,21 +18,24 @@ class CCSXXX:
         self.resource_name = resource_name
 
     def connect(self):
-        self.dll_path = dll_path
-        self.resource_name = resource_name.encode('')
-        self.handle = ctypes.c_int()
-        self.lib = ctypes.CDLL(dll_path)
-        self.connect_device()
 
+        self._device = lib.tlccs_init(self.resource_name, 1, 1, ctypes.byref(ccs_handle))
 
-        init_func = self.lib.TLCCS_init
-        init_func.restype = ctypes.c_int
-        init_func.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-
-        id_query = 1
-        status = init_func(self.resource_name, id_query, ctypes.byref(self.handle))
-        if status != 0:
-            raise Exception(f"Error initializing spectrometer: {status}")
+        # self.dll_path = dll_path
+        # self.resource_name = resource_name.encode('')
+        # self.handle = ctypes.c_int()
+        # self.lib = ctypes.CDLL(dll_path)
+        # self.connect_device()
+        #
+        #
+        # init_func = self.lib.TLCCS_init
+        # init_func.restype = ctypes.c_int
+        # init_func.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+        #
+        # id_query = 1
+        # status = init_func(self.resource_name, id_query, ctypes.byref(self.handle))
+        # if status != 0:
+        #     raise Exception(f"Error initializing spectrometer: {status}")
     #def close
        def close_device(self):
             close_func = self.lib.TLCCS_close
