@@ -1,12 +1,13 @@
 # This code is reproduced from https://github.com/Thorlabs/Light_Analysis_Examples/blob/main/Python/Thorlabs%20CCS%20Spectrometers/CCS%20using%20ctypes%20-%20Python%203.py
 
 # import python libraries
+import os
 import ctypes
 
 # DK load dll file
-dll_path = r"C:\Program Files\IVI Foundation\VISA\Win64\Bin\TLCCS_64.dll"
-# lib = ctypes.CDLL(dll_path)
-lib = ctypes.cdll.LoadLibrary(dll_path)
+os.chdir(r"C:\Program Files\IVI Foundation\VISA\Win64\Bin")
+lib = ctypes.cdll.LoadLibrary("TLCCS_64.dll")
+
 ccs_handle=ctypes.c_int(0)
 
 # resource_name = " "
@@ -49,6 +50,8 @@ class CCSXXX:
 
         # set the integration time
      def set_integration_time(self, integration_time):
+        #  DK - use _device.integration_time=ctypes.c_double(integration_time)
+
         set_integration_time_func = self.lib.TLCCS_setIntegrationTime
         set_integration_time_func.restype = ctypes.c_int
         set_integration_time_func.argtypes = [ctypes.c_int, ctypes.c_double]
