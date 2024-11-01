@@ -1,9 +1,8 @@
 import os
 import ctypes
 import numpy as np
-import matplotlib.pyplot as plt
 
-class TLCCS:
+class CCSXXX:
     def __init__(self, dll_path, resource_name):
         self.dll_path = dll_path
         self.resource_name = resource_name.encode('utf-8')
@@ -36,7 +35,7 @@ class TLCCS:
         if status != 0:
             raise Exception(f"Error getting wavelength data: {status}")
         wavelengths = np.array(list(wavelengths))
-        return wavelengths
+        return wavelengths 
 
     def get_scan_data(self):
         data_array = (ctypes.c_double * 3648)()
@@ -54,4 +53,3 @@ if __name__ == "__main__":
     spectrometer.set_integration_time(10.0e-3)
     spectrometer.start_scan()
     wavelengths = spectrometer.get_wavelength_data()
-    data_array = spectrometer.get_scan_data()
