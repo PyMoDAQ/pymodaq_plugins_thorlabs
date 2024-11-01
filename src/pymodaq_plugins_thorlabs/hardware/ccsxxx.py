@@ -1,95 +1,55 @@
-# This code is reproduced from https://github.com/Thorlabs/Light_Analysis_Examples/blob/main/Python/Thorlabs%20CCS%20Spectrometers/CCS%20using%20ctypes%20-%20Python%203.py
-
-# import python libraries
 import os
 import ctypes
-
-# DK load dll file
-os.chdir(r"C:\Program Files\IVI Foundation\VISA\Win64\Bin")
-lib = ctypes.cdll.LoadLibrary("TLCCS_64.dll")
-
-ccs_handle=ctypes.c_int(0)
-
-# resource_name = " "
-
+import numpy as np
 
 class CCSXXX:
-    def __init__(self, resource_name):
-        self._device = None
-        self.resource_name = resource_name
+    def __init__(self, dll_path, resource_name):
+        self.dll_path = dll_path
+        self.resource_name = resource_name.encode('utf-8')
+        self.lib = None
+        self.ccs_handle = ctypes.c_int(0)
+        os.chdir(self.dll_path)
+        self.lib = ctypes.cdll.LoadLibrary("TLCCS_64.dll")
+
+    # def load_library(self):
 
     def connect(self):
+        self._device = self.lib.tlccs_init(self.resource_name, 1, 1, ctypes.byref(self.ccs_handle))
+        if self._device != 0:
+            raise Exception("Failed to initialize the device")
 
-        self._device = lib.tlccs_init(self.resource_name, 1, 1, ctypes.byref(ccs_handle))
-
-        # self.dll_path = dll_path
-        # self.resource_name = resource_name.encode('')
-        # self.handle = ctypes.c_int()
-        # self.lib = ctypes.CDLL(dll_path)
-        # self.connect_device()
-        #
-        #
-        # init_func = self.lib.TLCCS_init
-        # init_func.restype = ctypes.c_int
-        # init_func.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-        #
-        # id_query = 1
-        # status = init_func(self.resource_name, id_query, ctypes.byref(self.handle))
-        # if status != 0:
-        #     raise Exception(f"Error initializing spectrometer: {status}")
-    #def close
-       def close_device(self):
-            close_func = self.lib.TLCCS_close
-            close_func.restype = ctypes.c_int
-            close_func.argtypes = [ctypes.c_int]
-
-            status = close_func(self.handle)
-            if status != 0:
-                raise Exception(f"Error closing spectrometer: {status}")
-
-
-        # set the integration time
-     def set_integration_time(self, integration_time):
-        #  DK - use _device.integration_time=ctypes.c_double(integration_time)
-
-        set_integration_time_func = self.lib.TLCCS_setIntegrationTime
-        set_integration_time_func.restype = ctypes.c_int
-        set_integration_time_func.argtypes = [ctypes.c_int, ctypes.c_double]
-        status = set_integration_time_func(self.handle, ctypes.c_double(integration_time))
-        integration_time = 0.1  # in seconds
-        self.set_integration_time(integration_time)
+    def set_integration_time(self, integration_time):
+        integration_time = ctypes.c_double(integration_time)
+        status = self.lib.tlccs_setIntegrationTime(self.ccs_handle, integration_time)
         if status != 0:
-            raise Exception(f'Error setting integration time: {status})
+            raise Exception(f"Error setting integration time: {status}")
 
-    # start scanning i.e., expose the CCD via the monochrometer
-    def start_scanning(self):
-            start_scan_func = self.lib.TLCCS_startScan
-            start_scan_func.restype = ctypes.c_int
-            start_scan_func.argtypes = [ctypes.c_int]
-            status = start_scan_func(self.handle)
-            if status != 0:
-                raise Exception(f"Error starting scan: {status}"
-
-
-    # get the wavelength calibration coefficients
-    def wavelength_calibration(self, calibration_points):
-        set_calibration_func = self.lib.TLCCS_setWavelengthCalibration
-        set_calibration_func.restype = ctypes.c_int
-        set_calibration_func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-         num_points = len(calibration_points)
-        calibration_array = (ctypes.c_double * num_points)(*calibration_points)
-
-        status = set_calibration_func(self.handle, calibration_array, num_points)
+    def start_scan(self):
+        status = self.lib.tlccs_startScan(self.ccs_handle)
         if status != 0:
-            raise Exception(f"Error performing wavelength calibration: {status}")
+            raise Exception(f"Error starting scan: {status}")
 
-    # get the data array i.e., a spectrum
-    def acquire_spectrum(self):
-            get_spectrum_func = self.lib.TLCCS_getSpectrum
-            get_spectrum_func.restype = ctypes.c_int
-            get_spectrum_func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int]
-             spectrum = (ctypes.c_double * )()
-            status = self.get_spectrum_func(self.handle, spectrum, len(spectrum))
-            if status != 0:
-                raise Exception(f"Error acquiring spectrum: {status}")
-            return spectrum
+    def get_wavelength_data(self):
+        wavelengths = (ctypes.c_double * 3648)()
+        status = self.lib.tlccs_getWavelengthData(self.ccs_handle, 0, ctypes.byref(wavelengths), ctypes.c_void_p(None), ctypes.c_void_p(None))
+        if status != 0:
+            raise Exception(f"Error getting wavelength data: {status}")
+        wavelengths = np.array(list(wavelengths))
+        return wavelengths 
+
+    def get_scan_data(self):
+        data_array = (ctypes.c_double * 3648)()
+        status = self.lib.tlccs_getScanData(self.ccs_handle, ctypes.byref(data_array))
+        if status != 0:
+            raise Exception(f"Error getting scan data: {status}")
+        data_array= np.array(list(data_array))
+        return data_array
+
+# Example usage
+if __name__ == "__main__":
+    spectrometer = TLCCS(r"C:\Program Files\IVI Foundation\VISA\Win64\Bin", 'USB0::0x1313::0x8087::M00934802::RAW')
+    spectrometer.load_library()
+    spectrometer.connect()
+    spectrometer.set_integration_time(10.0e-3)
+    spectrometer.start_scan()
+    wavelengths = spectrometer.get_wavelength_data()
