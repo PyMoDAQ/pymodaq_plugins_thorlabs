@@ -3,8 +3,8 @@ import ctypes
 import numpy as np
 
 class CCSXXX:
-    def __init__(self, dll_path, resource_name):
-        self.dll_path = dll_path
+    def __init__(self, resource_name):
+        self.dll_path = dll_path # DK - Replace dll_path with C://Program Files//IVI Foundation//VISA//Win64//Bin...?
         self.resource_name = resource_name.encode('utf-8')
         self.lib = None
         self.ccs_handle = ctypes.c_int(0)
@@ -44,6 +44,9 @@ class CCSXXX:
             raise Exception(f"Error getting scan data: {status}")
         data_array= np.array(list(data_array))
         return data_array
+
+    def close(self):
+        pass # DK - replace pass with the command.
 
 # Example usage
 if __name__ == "__main__":

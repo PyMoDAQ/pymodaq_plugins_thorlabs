@@ -3,11 +3,13 @@ from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, Axis, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from pymodaq.utils.parameter import Parameter
+from pymodaq_plugins_thorlabs.hardware.ccxxx import CCSXXX
 
 
-class PythonWrapperOfYourInstrument:
-    #  TODO Replace this fake class with the import of the real python wrapper of your instrument
-    pass
+# DK - we created this in hardware/ccsxxx.py
+# class PythonWrapperOfYourInstrument:
+#     #  TODO Replace this fake class with the import of the real python wrapper of your instrument
+#     pass
 
 # TODO:
 # (1) change the name of the following class to DAQ_1DViewer_TheNameOfYourChoice
@@ -15,7 +17,7 @@ class PythonWrapperOfYourInstrument:
 #     for the class name and the file name.)
 # (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
 #     pymodaq_plugins_my_plugin/daq_viewer_plugins/plugins_1D
-class DAQ_1DViewer_Template(DAQ_Viewer_base):
+class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
     """ Instrument plugin class for a 1D viewer.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Viewer module through inheritance via
@@ -37,7 +39,11 @@ class DAQ_1DViewer_Template(DAQ_Viewer_base):
     # TODO add your particular attributes here if any
 
     """
+    # DK - add integration_time parameter (done)
     params = comon_parameters+[
+        {'title': 'Integration time', 'name': 'integration_time', 'type': 'float', 'value': 10.0e-3},
+        # {DK - add resource_name},
+
         ## TODO for your custom plugin
         # elements to be added here as dicts in order to control your custom stage
         ############
@@ -46,12 +52,13 @@ class DAQ_1DViewer_Template(DAQ_Viewer_base):
     def ini_attributes(self):
         #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
         #  autocompletion
-        self.controller: PythonWrapperOfYourInstrument = None
+        self.controller: CCSXXX = None
 
         # TODO declare here attributes you want/need to init with a default value
 
         self.x_axis = None
 
+    # DK - change settings
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
 
@@ -61,8 +68,8 @@ class DAQ_1DViewer_Template(DAQ_Viewer_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
+        if param.name() == "integration_time":
+           self.controller.set_integration_time(self.settings['integration_time'])
 #        elif ...
         ##
 
@@ -82,12 +89,13 @@ class DAQ_1DViewer_Template(DAQ_Viewer_base):
             False if initialization failed otherwise True
         """
 
-        raise NotImplemented  # TODO when writing your own plugin remove this line and modify the one below
+        # raise NotImplemented  # TODO when writing your own plugin remove this line and modify the one below
         self.ini_detector_init(slave_controller=controller)
 
         if self.is_master:
-            self.controller = PythonWrapperOfYourInstrument()  #instantiate you driver with whatever arguments are needed
-            self.controller.open_communication() # call eventual methods
+
+            self.controller = CCSXXX(self.settings['resource_name'])  #instantiate you driver with whatever arguments are needed
+            self.controller.connect() # call eventual methods
 
         ## TODO for your custom plugin
         # get the x_axis (you may want to to this also in the commit settings if x_axis may have changed
@@ -97,8 +105,7 @@ class DAQ_1DViewer_Template(DAQ_Viewer_base):
         # TODO for your custom plugin. Initialize viewers pannel with the future type of data
         self.dte_signal_temp.emit(DataToExport(name='myplugin',
                                                data=[DataFromPlugins(name='Mock1',
-                                                                     data=[np.array([0., 0., ...]),
-                                                                           np.array([0., 0., ...])],
+                                                                     data=np.zeros((3648)),  # for example
                                                                      dim='Data1D', labels=['Mock1', 'label2'],
                                                                      axes=[self.x_axis])]))
 
