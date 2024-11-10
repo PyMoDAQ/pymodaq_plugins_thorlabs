@@ -99,7 +99,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         ----------
         value: (DataActuator) value of the absolute target positioning
         """
-        self._move_done = False
         value = self.check_bound(value)
         self.target_value = value
         value = self.set_position_with_scaling(value) 
@@ -112,7 +111,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         ----------
         value: (DataActuator) value of the relative target positioning
         """
-        self._move_done = False
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
