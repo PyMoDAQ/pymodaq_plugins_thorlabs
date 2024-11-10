@@ -34,14 +34,13 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def ini_attributes(self):
         self.controller: Piezo = None
-        self._move_done = False
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
 
         Returns
         -------
-        float: The position obtained after scaling conversion.
+        DataActuator: The position obtained after scaling conversion.
         """
         pos = DataActuator(
             data=self.controller.get_position(),
@@ -87,7 +86,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         else:
             self.controller = controller
 
-        self.axis_unit = self.controller.get_units(self.axis_value)
+        self.axis_unit = self._controller_units
 
         info = f'{self.controller.name} - {self.controller.serial_number}'
         initialized = True
@@ -98,7 +97,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
         Parameters
         ----------
-        value: (float) value of the absolute target positioning
+        value: (DataActuator) value of the absolute target positioning
         """
         self._move_done = False
         value = self.check_bound(value)
@@ -111,7 +110,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
         Parameters
         ----------
-        value: (float) value of the relative target positioning
+        value: (DataActuator) value of the relative target positioning
         """
         self._move_done = False
         value = self.check_bound(self.current_value + value) - self.current_value
@@ -121,7 +120,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self._move_done = False
         self.controller.home()
 
     def stop_motion(self):
