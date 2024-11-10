@@ -1,126 +1,132 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun, DataActuatorType
-#from pymodaq.utils.daq_utils import ThreadCommand
-#from pymodaq.utils.parameter import Parameter
-from pymodaq.utils.logger import set_logger, get_module_name
-
+from pymodaq.control_modules.move_utility_classes import (
+    DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator)
+from pymodaq.utils.daq_utils import ThreadCommand
+from pymodaq.utils.parameter import Parameter
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
-
+from pymodaq.utils.logger import set_logger, get_module_name
 
 logger = set_logger(get_module_name(__file__))
 
 
 class DAQ_Move_KPZ101(DAQ_Move_base):
+    """ Instrument plugin class for an actuator.
+
+    This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
+    DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
+
+    Attributes:
+    -----------
+    controller: object
+        The particular object that allow the communication with the hardware, in general a python wrapper around the
+         hardware library.
+
     """
-    Wrapper object to access Piezo functionalities, similar to Kinesis instruments 
-    """
-    _controller_units = 'V'
-    _axes_names = {"X-axis"}
+    _controller_units = Piezo.default_units
+    is_multiaxes = True
+    _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
+    params = [
+                 {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
+                  'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]}
 
-    is_multiaxes = False
-    logger.error('This plugin is not yet compatible with multi-axes')
-
-    params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
-              {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
-               'limits': serialnumbers_piezo},
-              ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
+             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
     def ini_attributes(self):
-        try:
-            self.controller: Piezo = None
-            self.settings.child('bounds', 'is_bounds').setValue(True)
-            self.settings.child('bounds', 'max_bound').setValue(360)
-            self.settings.child('bounds', 'min_bound').setValue(0)
-        except Exception as e: 
-            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_attributes')
-
-    def commit_settings(self, param):
-       pass 
-
-    def ini_stage(self, controller=None):
-        """
-        Connect to Kinesis Piezo Stage by communicating with kinesis.py
-        """
-        self.controller = self.ini_stage_init(controller, Piezo())
-
-        try :
-            self.controller.connect(self.settings.child('serial_number').value())
-        except Exception as e:
-            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
-
-        # if self.settings['multiaxes', 'multi_status'] == "Master":
-        #     self.controller.connect(self.settings(['serial_number']))
-        try: 
-            info = self.controller.name
-            self.settings.child('controller_id').setValue(info)
-        except Exception as e:
-            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
-        # info = self.controller.name
-        # self.settings.child('controller_id').setValue(info)
-        try:
-            initialized = True
-        except Exception as e:
-            logger.exception(str(e) + ' in DAQ_Move_KPZ101.ini_stage')
-            initialized = False
-        # initialized = True
-        return info, initialized
-
-    def close(self):
-        """
-            close the current instance of Kinesis instrument.
-        """
-        if self.controller is not None:
-            self.controller.close()
-
-    def stop_motion(self):
-        """
-            See Also
-            --------
-            DAQ_Move_base.move_done
-        """
-        if self.controller is not None:
-            self.controller.stop()
+        self.controller: Piezo = None
+        self._move_done = False
 
     def get_actuator_value(self):
-        """
-            Get the current hardware position with scaling conversion of the Kinsesis instrument provided by get_position_with_scaling
+        """Get the current value from the hardware with scaling conversion.
 
-            See Also
-            --------
-            DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
+        Returns
+        -------
+        float: The position obtained after scaling conversion.
         """
-        
-        pos = self.controller.get_position()
+        pos = DataActuator(
+            data=self.controller.get_position(),
+            units=self.controller.get_units()
+        )
         pos = self.get_position_with_scaling(pos)
         return pos
 
-    def move_abs(self, position):
-        """
-        Set the current position with voltage conversion of the Kinesis instrument 
-        """
-        
-        position = self.check_bound(position)
-        self.target_position = position
-        position = self.set_position_with_scaling(position)
+    def close(self):
+        """Terminate the communication protocol"""
+        if self.is_master:
+            self.controller.close()
 
-        self.controller.move_abs(position) 
+    def commit_settings(self, param: Parameter):
+        """Apply the consequences of a change of value in the detector settings
 
-    def move_rel(self, position):
+        Parameters
+        ----------
+        param: Parameter
+            A given parameter (within detector_settings) whose value has been changed by the user
         """
-        Moves the Kinesis Piezo Stage relatively to the current position. 
-        """
-        position = self.check_bound(self.current_position + position) - self.current_position
-        self.target_position = position + self.current_position
-        position = self.set_position_relative_with_scaling(position)
+        if param.name() == 'axis':
+            self.axis_unit = self.controller.get_units(self.axis_value)
 
-        self.controller.move_abs(self.target_position)
+    def ini_stage(self, controller=None):
+        """Actuator communication initialization
+
+        Parameters
+        ----------
+        controller: (object)
+            custom object of a PyMoDAQ plugin (Slave case). None if only one actuator by controller (Master case)
+
+        Returns
+        -------
+        info: str
+        initialized: bool
+            False if initialization failed otherwise True
+        """
+
+        if self.is_master:
+            self.controller = Piezo()
+            self.controller.connect(self.settings['serial_number'])
+        else:
+            self.controller = controller
+
+        self.axis_unit = self.controller.get_units(self.axis_value)
+
+        info = f'{self.controller.name} - {self.controller.serial_number}'
+        initialized = True
+        return info, initialized
+
+    def move_abs(self, value: DataActuator):
+        """ Move the actuator to the absolute target defined by value
+
+        Parameters
+        ----------
+        value: (float) value of the absolute target positioning
+        """
+        self._move_done = False
+        value = self.check_bound(value)
+        self.target_value = value
+        value = self.set_position_with_scaling(value) 
+        self.controller.move_abs(value.value())
+
+    def move_rel(self, value: DataActuator):
+        """ Move the actuator to the relative target actuator value defined by value
+
+        Parameters
+        ----------
+        value: (float) value of the relative target positioning
+        """
+        self._move_done = False
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
+        value = self.set_position_relative_with_scaling(value)
+        self.controller.move_abs(self.target_value.value())
 
     def move_home(self):
-        """
-        Move the Kinesis Piezo Stage to home position
-        """
-        self.controller.home(callback=self.move_done)
+        """Call the reference method of the controller"""
+        self._move_done = False
+        self.controller.home()
+
+    def stop_motion(self):
+        """Stop the actuator and emits move_done signal"""
+        self.controller.stop()
 
 
 if __name__ == '__main__':

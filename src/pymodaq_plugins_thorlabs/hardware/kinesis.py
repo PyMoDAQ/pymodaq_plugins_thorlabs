@@ -1,7 +1,7 @@
 import clr
 import sys
 from typing import Dict
-from os import system
+
 from System import Decimal
 from System import Action
 from System import UInt64
@@ -20,7 +20,6 @@ clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
-
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
@@ -28,15 +27,17 @@ import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
-
 Device.DeviceManagerCLI.BuildDeviceList()
-serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_brushless = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
+serialnumbers_integrated_stepper = [str(ser) for ser in
+                                    Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
+serialnumbers_flipper = [str(ser) for ser in
+                         Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
+serialnumbers_brushless = [str(ser) for ser in
+                           Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
-class Kinesis:
 
+class Kinesis:
     default_units = ''
 
     def __init__(self):
@@ -126,6 +127,7 @@ class Kinesis:
         except Exception:
             units = self.default_units
         return units
+
 
 class IntegratedStepper(Kinesis):
     """ Specific Kinesis class for Integrated Stepper motor"""
@@ -292,6 +294,35 @@ class Flipper(Kinesis):
         return position
 
 
+class Piezo(Kinesis):
+    default_units = 'V'
+
+    def __init__(self):
+        self._device: KCubePiezo.KCubePiezo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_piezo:
+            self._device = (
+                KCubePiezo.KCubePiezo.CreateKCubePiezo(serial))
+            self._device.Connect(serial)
+            self._device.StartPolling(250)
+            self._device.EnableDevice()
+            self._device.GetPiezoConfiguration(serial)
+        else:
+            raise ValueError('Invalid Serial Number')
+
+    def move_abs(self, position: float):
+        self._device.SetOutputVoltage(Decimal(position))
+
+    def home(self):
+        self.move_abs(0.0)
+
+    def get_position(self) -> float:
+        return Decimal.ToDouble(self._device.GetOutputVoltage())
+
+    def stop(self):
+        pass
+
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
     controller.connect(serialnumbers_brushless[0])
@@ -308,47 +339,3 @@ if __name__ == '__main__':
     print(motor.get_target_position())
 
     controller.close()
-
-
-class Piezo(Kinesis):
-    def __init__(self):
-        self._device: KCubePiezo.KCubePiezo = None
-        self._connect = None
-
-    def connect(self, serial: int):
-        if serial in serialnumbers_piezo:
-            self._device = KCubePiezo.KCubePiezo.CreateKCubePiezo(serial)
-            super().connect(serial)
-            self._device.EnableDevice() 
-            if not (self._device.IsSettingsInitialized()):
-                raise (Exception("no Stage Connected"))
-        else:
-            raise ValueError('Invalid Serial Number')
-    
-    def move_abs(self, position : float, callback = None):
-        min_volt = 0.0 
-        max_volt = Decimal.ToDouble(self._device.GetMaxOutputVoltage()) 
-        print('Max Voltage:', max_volt)
-        if position >= min_volt and position <= max_volt:
-           self._device.SetOutputVoltage(Decimal(position)) 
-        else:
-            raise ValueError('Invalid Voltage')
-
-    def home(self, callback=None):
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = 0
-
-        self.move_abs(0.0)
-
-    def get_position(self):
-        voltage = Decimal.ToDouble(self._device.GetOutputVoltage())
-        return voltage
-    
-    def stop(self):
-        pass   
-
-    def close(self):
-        self._device.Disconnect()
-    
