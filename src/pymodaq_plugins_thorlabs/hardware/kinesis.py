@@ -346,8 +346,8 @@ class KDC101(Kinesis):
         else:
             raise ValueError('Invalid Serial Number')
      
-    def get_position(self):
-        return Decimal.ToDouble(self._device.RequestPosition())
+    # def get_position(self): #Not implemented?
+    #     return Decimal.ToDouble(self._device.RequestPosition())
     
     def move_abs(self, position: float, callback=None):
         if callback is not None:
