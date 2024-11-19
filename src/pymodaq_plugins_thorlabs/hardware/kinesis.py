@@ -323,6 +323,11 @@ class Piezo(Kinesis):
     def stop(self):
         pass
 
+class KDC101(Kinesis):
+    def __init__(self): 
+        self._device = 
+
+
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
     controller.connect(serialnumbers_brushless[0])
