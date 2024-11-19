@@ -340,9 +340,12 @@ class KDC101(Kinesis):
             self._device.EnableDevice()
             time.sleep(0.25)
 
+          # DK - perhaps you need xxx.GetDeviceInfo()
+
             if not self._device.IsSettingsInitialized():
                 raise Exception("Device not initialized")
 
+      # DK - restore this because the say "Before homing or moving device, ensure the motor's configuration is loaded"
             # self._device.GetMotorConfiguration(serial)
         else:
             raise ValueError('Invalid Serial Number')
@@ -356,7 +359,9 @@ class KDC101(Kinesis):
         else:
             callback = 0
         self._device.MoveTo(Decimal(position), callback)
-        
+
+  # DK - add move_rel if there is an appropriate dll method.
+  
     def home(self, callback=None):
         if callback is not None:
             callback = Action[UInt64](callback)
@@ -364,6 +369,9 @@ class KDC101(Kinesis):
             callback = 0
         self._device.Home(callback) 
 
+# DK - add stop method if there is a dll method.
+
+# DK - add get_position method if there is a dll method.
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
