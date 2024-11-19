@@ -326,16 +326,17 @@ class Piezo(Kinesis):
     def stop(self):
         pass
 
-class KDC101(Kinesis):
+class KDC101(Kinesis): # DK - Rename once we finish writing the hardware
     def __init__(self): 
-        self._device = KCube.KCubeDCServo = None
+        self._device: KCube.DCServo = None
+
     def connect(self, serial: int):
         if serial in serialnumbers_kdc101:
-            self._device = KCube.KCubeDCServo.CreateDCServo(serial)
+            self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
             self._device.Connect(serial)
             self._device.StartPolling(250)
             self._device.EnableDevice()
-            self._device.GetMotorConfiguration(serial)
+            # self._device.GetMotorConfiguration(serial)
         else:
             raise ValueError('Invalid Serial Number')
      
@@ -347,7 +348,8 @@ class KDC101(Kinesis):
             callback = Action[UInt64](callback)
         else:
             callback = 0
-        self._device.SetPosition(Decimal(position), callback)
+        # self._device.SetPosition(Decimal(position), callback)
+        self._device.MoveTo(Decimal(position), callback)
         
     def home(self, callback=None):
         if callback is not None:
@@ -355,7 +357,6 @@ class KDC101(Kinesis):
         else:
             callback = 0
         self._device.Home(callback) 
-
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
