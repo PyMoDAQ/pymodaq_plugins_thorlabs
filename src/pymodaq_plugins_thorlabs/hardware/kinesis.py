@@ -344,9 +344,10 @@ class KDC101(Kinesis):
 
             if not self._device.IsSettingsInitialized():
                 raise Exception("Device not initialized")
-
-      # DK - restore this because the say "Before homing or moving device, ensure the motor's configuration is loaded"
-            # self._device.GetMotorConfiguration(serial)
+        
+      # DK - add this. The example says "Before homing or moving device, ensure the motor's configuration is loaded" Edit variable names.
+              m_config = device.LoadMotorConfiguration(serial_no,
+                                                DeviceConfiguration.DeviceSettingsUseOptionType.UseFileSettings)
         else:
             raise ValueError('Invalid Serial Number')
      
