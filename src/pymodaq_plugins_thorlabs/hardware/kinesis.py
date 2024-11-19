@@ -19,6 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -26,6 +27,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.KCube.DCServoCLI as KCube
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -35,6 +37,7 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
+serialnumbers_kdc101 = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCube.KCubeDCServo.DevicePrefix)]
 
 
 class Kinesis:
@@ -325,7 +328,33 @@ class Piezo(Kinesis):
 
 class KDC101(Kinesis):
     def __init__(self): 
-        self._device = 
+        self._device = KCube.KCubeDCServo = None
+    def connect(self, serial: int):
+        if serial in serialnumbers_kdc101:
+            self._device = KCube.KCubeDCServo.CreateDCServo(serial)
+            self._device.Connect(serial)
+            self._device.StartPolling(250)
+            self._device.EnableDevice()
+            self._device.GetMotorConfiguration(serial)
+        else:
+            raise ValueError('Invalid Serial Number')
+     
+    def get_position(self):
+        return Decimal.ToDouble(self._device.RequestPosition())
+    
+    def move_abs(self, position: float, callback=None):
+        if callback is not None:
+            callback = Action[UInt64](callback)
+        else:
+            callback = 0
+        self._device.SetPosition(Decimal(position), callback)
+        
+    def home(self, callback=None):
+        if callback is not None:
+            callback = Action[UInt64](callback)
+        else:
+            callback = 0
+        self._device.Home(callback) 
 
 
 if __name__ == '__main__':
