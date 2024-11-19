@@ -328,14 +328,21 @@ class Piezo(Kinesis):
 
 class KDC101(Kinesis):
     def __init__(self): 
-        self._device = KCube.KCubeDCServo = None
+        self._device: KCube.KCubeDCServo = None
     def connect(self, serial: int):
         if serial in serialnumbers_kdc101:
-            self._device = KCube.KCubeDCServo.CreateDCServo(serial)
+            self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
             self._device.Connect(serial)
+            time.sleep(0.25)
             self._device.StartPolling(250)
+            time.sleep(0.25)
             self._device.EnableDevice()
-            self._device.GetMotorConfiguration(serial)
+            time.sleep(0.25)
+
+            if not self._device.IsSettingsInitialized():
+                raise Exception("Device not initialized")
+
+            # self._device.GetMotorConfiguration(serial)
         else:
             raise ValueError('Invalid Serial Number')
      
@@ -347,7 +354,7 @@ class KDC101(Kinesis):
             callback = Action[UInt64](callback)
         else:
             callback = 0
-        self._device.SetPosition(Decimal(position), callback)
+        self._device.MoveTo(Decimal(position), callback)
         
     def home(self, callback=None):
         if callback is not None:
