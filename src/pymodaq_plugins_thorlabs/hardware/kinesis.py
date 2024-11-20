@@ -351,7 +351,7 @@ class KDC101(Kinesis):
         logger.info(f"Servo Configuration: {servo_config}")
 
     def get_position(self): 
-        return self._class.home()
+        return super().get_position()
     
     def move_abs(self, position: float, callback=None):
         if callback is not None:
@@ -361,10 +361,10 @@ class KDC101(Kinesis):
         self._device.MoveTo(Decimal(position), callback)
 
     def home(self, callback=None):
-        self._class.home(callback)
+        super().home(callback)
 
     def stop(self):
-        self._class.stop()
+        super().stop()
 
 
 if __name__ == '__main__':
