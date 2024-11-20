@@ -2,6 +2,8 @@ import clr
 import sys
 from typing import Dict
 import time
+import logging
+logger = logging.getLogger(__name__)
 
 from System import Decimal
 from System import Action
@@ -346,9 +348,7 @@ class KDC101(Kinesis):
                 assert self._device.IsSettingsInitialized() is True
         
         servo_config = self._device.LoadMotorConfiguration(serial)
-        servo_config.DeviceSettingsName = "PRMTZ8" #???
-        servo_config.UpdateCurrentConfiguration()
-        self._device.SetSettings(self._device.MotorDeviceSettings, True, False)
+        logger.info(f"Servo Configuration: {servo_config}")
 
     def get_position(self): 
         return self._class.home()
