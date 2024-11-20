@@ -346,25 +346,27 @@ class KDC101(Kinesis):
                 assert self._device.IsSettingsInitialized() is True
         
         servo_config = self._device.LoadMotorConfiguration(serial)
-        servo_config.DeviceSettingsName = "PRMTZ8" #???
-        servo_config.UpdateCurrentConfiguration()
-        self._device.SetSettings(self._device.MotorDeviceSettings, True, False)
+        # servo_config.DeviceSettingsName = "PRMTZ8" #??? # DK - delete. we don't use. I guess this is their own setting name.
+        # servo_config.UpdateCurrentConfiguration() # DK - delete. we don't use
+        # self._device.SetSettings(self._device.MotorDeviceSettings, True, False)  # DK - delete. we don't use
 
-    def move_abs(self, position: float, callback=None):
+    # DK - write your own get_position because kinesis shows raise NotImplementedError
+
+    def move_abs(self, position: float, callback=None): # DK - delete this method because this is exactly same as the method in kinesis class.
         if callback is not None:
             callback = Action[UInt64](callback)
         else:
             callback = 0
         self._device.MoveTo(Decimal(position), callback)
 
-    def home(self, callback=None):
+    def home(self, callback=None): # DK - delete because of the same reason.
         if callback is not None:
             callback = Action[UInt64](callback)
         else:
             callback = 0
-        self._device.Home(callback) 
+        self._device.Home(callback)
 
-    def stop(self):
+    def stop(self):  # DK - delete because of the same reason.
         self._device.Stop(0)
 
 
