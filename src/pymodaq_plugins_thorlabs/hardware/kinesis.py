@@ -359,6 +359,9 @@ class KDC101(Kinesis):
         else:
             callback = 0
         self._device.MoveTo(Decimal(position), callback)
+        
+    def move_rel(self, position: float, callback=None):
+        super().move_rel(position, callback)
 
     def home(self, callback=None):
         super().home(callback)
