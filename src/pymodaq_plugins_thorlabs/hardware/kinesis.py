@@ -330,6 +330,7 @@ class Piezo(Kinesis):
 class KDC101(Kinesis):
     def __init__(self): 
         self._device: KCube.KCubeDCServo = None
+        self._class = KDC101()
     def connect(self, serial: int):
         if serial in serialnumbers_kdc101:
             self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
@@ -340,7 +341,6 @@ class KDC101(Kinesis):
             self._device.EnableDevice()
             time.sleep(0.25)
 
-
             if not self._device.IsSettingsInitialized():
                 self._device.WaitForSettingsInitialized(10000)
                 assert self._device.IsSettingsInitialized() is True
@@ -350,6 +350,9 @@ class KDC101(Kinesis):
         servo_config.UpdateCurrentConfiguration()
         self._device.SetSettings(self._device.MotorDeviceSettings, True, False)
 
+    def get_position(self): 
+        return self._class.home()
+    
     def move_abs(self, position: float, callback=None):
         if callback is not None:
             callback = Action[UInt64](callback)
@@ -365,7 +368,7 @@ class KDC101(Kinesis):
         self._device.Home(callback) 
 
     def stop(self):
-        self._device.Stop(0)
+        return self._class.stop()
 
 
 if __name__ == '__main__':
