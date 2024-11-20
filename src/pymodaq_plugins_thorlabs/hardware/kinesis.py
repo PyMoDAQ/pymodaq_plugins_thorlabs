@@ -351,7 +351,7 @@ class KDC101(Kinesis):
         logger.info(f"Servo Configuration: {servo_config}")
 
     def get_position(self): 
-        return super().get_position()
+        return Decimal.ToDouble(self._device.get_DevicePosition())
     
     def move_abs(self, position: float, callback=None):
         if callback is not None:
