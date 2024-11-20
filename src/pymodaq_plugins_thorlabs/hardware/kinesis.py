@@ -360,12 +360,12 @@ class KDC101(Kinesis):
             callback = 0
         self._device.MoveTo(Decimal(position), callback)
 
-    def home(self, callback=None):
+    def home(self, callback=None): # DK - delete because of the same reason.
         if callback is not None:
             callback = Action[UInt64](callback)
         else:
             callback = 0
-        self._device.Home(callback) 
+        self._device.Home(callback)
 
     def stop(self):
         return self._class.stop()
