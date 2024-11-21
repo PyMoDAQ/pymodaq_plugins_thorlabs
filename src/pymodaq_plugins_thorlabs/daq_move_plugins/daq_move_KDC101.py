@@ -25,9 +25,8 @@ class DAQ_Move_Template(DAQ_Move_base):
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
          
-
     """
-    is_multiaxes = True 
+    is_multiaxes = False #TODO: TEST WITHOUT MULTIAXIS
     _axis_names: Union[List[str], Dict[str, int]] = {'1': 1} 
     _controller_units: Union[str, List[str]] = KDC101.default_units 
     _epsilon: Union[float, List[float]] = 0.2e-3 
