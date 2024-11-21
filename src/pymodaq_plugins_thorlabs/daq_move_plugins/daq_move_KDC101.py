@@ -1,8 +1,8 @@
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_kdc101, KDC101
 from typing import Union, List, Dict
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
-    DataActuator  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
+    DataActuator  
+from pymodaq.utils.daq_utils import ThreadCommand 
 from pymodaq.utils.parameter import Parameter
 
 
@@ -12,6 +12,7 @@ from pymodaq.utils.parameter import Parameter
 #     for the class name and the file name.)
 # (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
 #     pymodaq_plugins_my_plugin/daq_move_plugins
+
 class DAQ_Move_Template(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
     
@@ -31,7 +32,6 @@ class DAQ_Move_Template(DAQ_Move_base):
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
          
-    # TODO add your particular attributes here if any
 
     """
     is_multiaxes = True 
@@ -58,7 +58,7 @@ class DAQ_Move_Template(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
 
-        pos = DataActuator(data=self.controller.get_position())  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_position())  
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -93,9 +93,9 @@ class DAQ_Move_Template(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.ini_stage_init(slave_controller=controller)  # will be useful when controller is slave
+        self.ini_stage_init(slave_controller=controller) 
 
-        if self.is_master:  # is needed when controller is master
+        if self.is_master: 
             self.controller = KDC101()
 
         info = "KDC101 DCServo initialized"
