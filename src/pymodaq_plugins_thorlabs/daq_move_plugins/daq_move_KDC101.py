@@ -36,13 +36,14 @@ class DAQ_Move_Template(DAQ_Move_base):
     """
     is_multiaxes = True 
     _axis_names: Union[List[str], Dict[str, int]] = {'1': 1} 
-    _controller_units: Union[str, List[str]] = 'mm'  
-    _epsilon: Union[float, List[float]] = 0.01  
+    _controller_units: Union[str, List[str]] = KDC101.default_units 
+    _epsilon: Union[float, List[float]] = 0.2e-3 
     data_actuator_type = DataActuatorType.DataActuator  
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]}
+                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]},
+                  {'title': 'Units:', 'name': 'units', 'type': 'string', 'value': _controller_units}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axis_names, epsilon=_epsilon)
 
