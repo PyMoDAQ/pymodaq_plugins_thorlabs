@@ -1,17 +1,10 @@
-from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_kdc101, KDC101
 from typing import Union, List, Dict
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
     DataActuator  
 from pymodaq.utils.daq_utils import ThreadCommand 
 from pymodaq.utils.parameter import Parameter
+from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_kdc101, KDC101
 
-
-# TODO:
-# (1) change the name of the following class to DAQ_Move_TheNameOfYourChoice
-# (2) change the name of this file to daq_move_TheNameOfYourChoice ("TheNameOfYourChoice" should be the SAME
-#     for the class name and the file name.)
-# (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
-#     pymodaq_plugins_my_plugin/daq_move_plugins
 
 class DAQ_Move_Template(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
@@ -75,7 +68,7 @@ class DAQ_Move_Template(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'axis':
+        if param.name() == 'units':
             self.axis_unit = self.controller.get_units()
         else:
             pass
@@ -98,6 +91,7 @@ class DAQ_Move_Template(DAQ_Move_base):
 
         if self.is_master: 
             self.controller = KDC101()
+            self.controller.connect(self.settings['serial_number'])
 
         info = "KDC101 DCServo initialized"
         initialized = True
@@ -114,7 +108,7 @@ class DAQ_Move_Template(DAQ_Move_base):
         value = self.check_bound(value) 
         self.target_value = value
         value = self.set_position_with_scaling(value)
-        self.controller.move_abs(value.value())
+        self.controller.move_abs(value.value(), 60000)
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -128,12 +122,12 @@ class DAQ_Move_Template(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
 
-        self.controller.move_rel(value.value())
+        self.controller.move_rel(value.value(), 60000) #TODO: CHECK IF MOVE_REL IS IMPLEMENTED IN KDC101
 
     def move_home(self):
         """Call the reference method of the controller"""
 
-        self.controller.home()
+        self.controller.home(60000)
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
