@@ -22,7 +22,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     """
     _controller_units = Piezo.default_units
-    is_multiaxes = True
+    is_multiaxes = True #TODO: RETEST THIS
     _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
@@ -30,7 +30,6 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
                   'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]},
                   {'title': 'Units:', 'name': 'units', 'type': 'string', 'value': _controller_units}
-
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
