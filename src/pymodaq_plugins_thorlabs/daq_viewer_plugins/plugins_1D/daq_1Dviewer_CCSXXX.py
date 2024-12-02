@@ -104,13 +104,13 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
         self.x_axis = Axis(data=data_x_axis, label='wavelength', units='nm', index=0)
 
         # TODO for your custom plugin. Initialize viewers pannel with the future type of data
-        self.dte_signal_temp.emit(DataToExport(name='myplugin',
-                                               data=[DataFromPlugins(name='Mock1',
+        self.dte_signal_temp.emit(DataToExport(name='CCSXXX',
+                                               data=[DataFromPlugins(name='spectrum',
                                                                      data=np.zeros((3648)),  # for example
-                                                                     dim='Data1D', labels=['Spectrum'],
+                                                                     dim='Data1D', labels=['Intensity'],
                                                                      axes=[self.x_axis])]))
 
-        info = "Whatever info you want to log"
+        info = "CCSXXX spectrometer"
         initialized = True
         return info, initialized
 
@@ -137,9 +137,9 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
         ##synchrone version (blocking function)
         self.controller.start_scan()
         data_tot = self.controller.get_scan_data()
-        self.dte_signal.emit(DataToExport('myplugin',
-                                          data=[DataFromPlugins(name='Mock1', data=data_tot,
-                                                                dim='Data1D', labels=['dat0', 'data1'],
+        self.dte_signal.emit(DataToExport('CCSXXX',
+                                          data=[DataFromPlugins(name='Spectrum', data=data_tot,
+                                                                dim='Data1D', labels=['data'],
                                                                 axes=[self.x_axis])]))
 
         ##asynchrone version (non-blocking function with callback)
