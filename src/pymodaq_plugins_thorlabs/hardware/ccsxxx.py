@@ -4,7 +4,7 @@ import numpy as np
 
 class CCSXXX:
     def __init__(self, resource_name):
-        self.dll_path = "C:\Program Files\IVI Foundation\VISA\Win64\Bin"  # DK - Replace dll_path with C://Program Files//IVI Foundation//VISA//Win64//Bin...?
+        self.dll_path = r"C:\Program Files\IVI Foundation\VISA\Win64\Bin"  # DK - Replace dll_path with C://Program Files//IVI Foundation//VISA//Win64//Bin...?
         self.resource_name = resource_name#.encode('utf-8')
         self.lib = None
         self.ccs_handle = ctypes.c_int(0)
@@ -39,7 +39,7 @@ class CCSXXX:
         if status != 0:
             raise Exception(f"Error starting scan: {status}")
 
-    def get_wavelength_data(self, wavelengths=None):
+    def get_wavelength_data(self):
         wavelengths = np.zeros(3648, dtype=np.float64)
         # wavelengths_c = wavelengths.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         wavelengths = (ctypes.c_double * 3648)()

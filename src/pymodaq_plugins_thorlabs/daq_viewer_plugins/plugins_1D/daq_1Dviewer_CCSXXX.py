@@ -1,9 +1,9 @@
 import numpy as np
-from pymodaq.utils.daq_utils import ThreadCommand
+# from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, Axis, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from pymodaq.utils.parameter import Parameter
-from pymodaq_plugins_thorlabs.hardware.ccxxx import CCSXXX
+from pymodaq_plugins_thorlabs.hardware.ccsxxx import CCSXXX
 
 
 # DK - we created this in hardware/ccsxxx.py
@@ -42,12 +42,13 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
     # DK - add integration_time parameter (done)
     params = comon_parameters+[
         {'title': 'Integration time', 'name': 'integration_time', 'type': 'float', 'value': 10.0e-3},
-        # {DK - add resource_name},
+        {'title': 'Resource Name:', 'name': 'resource_name', 'type': 'str', 'value': b'USB0::0x1313::0x8087::M00934802::RAW'}      # {DK - add resource_name},
 
         ## TODO for your custom plugin
         # elements to be added here as dicts in order to control your custom stage
         ############
         ]
+    # integration time
 
     def ini_attributes(self):
         #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
@@ -99,14 +100,14 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
 
         ## TODO for your custom plugin
         # get the x_axis (you may want to to this also in the commit settings if x_axis may have changed
-        data_x_axis = self.controller.your_method_to_get_the_x_axis()  # if possible
-        self.x_axis = Axis(data=data_x_axis, label='', units='', index=0)
+        data_x_axis = self.controller.get_wavelength_data()  # if possible
+        self.x_axis = Axis(data=data_x_axis, label='wavelength', units='nm', index=0)
 
         # TODO for your custom plugin. Initialize viewers pannel with the future type of data
         self.dte_signal_temp.emit(DataToExport(name='myplugin',
                                                data=[DataFromPlugins(name='Mock1',
                                                                      data=np.zeros((3648)),  # for example
-                                                                     dim='Data1D', labels=['Mock1', 'label2'],
+                                                                     dim='Data1D', labels=['Spectrum'],
                                                                      axes=[self.x_axis])]))
 
         info = "Whatever info you want to log"
@@ -116,7 +117,8 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
     def close(self):
         """Terminate the communication protocol"""
         ## TODO for your custom plugin
-        raise NotImplemented  # when writing your own plugin remove this line
+         # when writing your own plugin remove this line
+        self.controller.close()
         #  self.controller.your_method_to_terminate_the_communication()  # when writing your own plugin replace this line
 
     def grab_data(self, Naverage=1, **kwargs):
@@ -133,31 +135,32 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
         ## TODO for your custom plugin: you should choose EITHER the synchrone or the asynchrone version following
 
         ##synchrone version (blocking function)
-        data_tot = self.controller.your_method_to_start_a_grab_snap()
+        self.controller.start_scan()
+        data_tot = self.controller.get_scan_data()
         self.dte_signal.emit(DataToExport('myplugin',
                                           data=[DataFromPlugins(name='Mock1', data=data_tot,
                                                                 dim='Data1D', labels=['dat0', 'data1'],
                                                                 axes=[self.x_axis])]))
 
         ##asynchrone version (non-blocking function with callback)
-        self.controller.your_method_to_start_a_grab_snap(self.callback)
-        #########################################################
+        # self.controller.start_scan(self.callback)
 
 
-    def callback(self):
+
+    # def callback(self):
         """optional asynchrone method called when the detector has finished its acquisition of data"""
-        data_tot = self.controller.your_method_to_get_data_from_buffer()
-        self.dte_signal.emit(DataToExport('myplugin',
-                                          data=[DataFromPlugins(name='Mock1', data=data_tot,
-                                                                dim='Data1D', labels=['dat0', 'data1'])]))
+        # data_tot = self.controller.get_scan_data()
+        # self.dte_signal.emit(DataToExport('myplugin',
+        #                               data=[DataFromPlugins(name='Mock1', data=data_tot,
+        #                                                        dim='Data1D', labels=['dat0', 'data1'])]))
 
     def stop(self):
         """Stop the current grab hardware wise if necessary"""
         ## TODO for your custom plugin
-        raise NotImplemented  # when writing your own plugin remove this line
-        self.controller.your_method_to_stop_acquisition()  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
-        ##############################
+        # raise NotImplemented  # when writing your own plugin remove this line
+        self.controller.close()  # when writing your own plugin replace this line
+        # self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        # ##############################
         return ''
 
 
