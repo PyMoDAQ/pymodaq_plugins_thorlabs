@@ -355,20 +355,16 @@ class KDC101(Kinesis):
         return Decimal.ToDouble(self._device.get_DevicePosition())
     
     def move_abs(self, position: float, callback=None):
-        if callback is not None:
-            callback = Action[UInt64](callback)
-        else:
-            callback = 0
         self._device.MoveTo(Decimal(position), callback)
         
     def move_rel(self, position: float, callback=None):
-        super().move_rel(position, callback)
+        self._device.MoveRelative(KCube.KCubeDCServo.MoveDirection.Forward, Decimal(position), callback)
 
     def home(self, callback=None):
-        super().home(callback)
+        self._device.Home(callback)
 
     def stop(self):
-        super().stop()
+        self._device.Stop(0)
 
     def set_units(self, units: str):
         self._device.get_UnitConverter().SetUnits(units)
