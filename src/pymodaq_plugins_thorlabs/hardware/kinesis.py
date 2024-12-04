@@ -330,7 +330,7 @@ class Piezo(Kinesis):
         pass
 
 class KDC101(Kinesis):
-    default_units = 'mm'
+    default_units = ''
     def __init__(self): 
         self._device: KCube.KCubeDCServo = None
 
@@ -369,6 +369,9 @@ class KDC101(Kinesis):
 
     def stop(self):
         super().stop()
+
+    def set_units(self, units: str):
+        self._device.get_UnitConverter().SetUnits(units)
 
 
 if __name__ == '__main__':
