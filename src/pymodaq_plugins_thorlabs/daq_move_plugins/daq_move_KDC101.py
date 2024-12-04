@@ -68,8 +68,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == 'units':
-            self.axis_unit = self.controller.get_units()
-            self.settings.child(('units')).setValue(self.axis_unit)
+            self.controller.set_units(self.settings.child(('units')).value())
         else:
             pass
 
