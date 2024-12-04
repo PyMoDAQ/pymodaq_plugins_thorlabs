@@ -367,7 +367,11 @@ class KDC101(Kinesis):
         self._device.Stop(0)
 
     def set_units(self, units: str):
-        self._device.get_UnitConverter().SetUnits(units)
+        """ Set the stage units from the controller"""
+        self.default_units = self._device.get_UnitConverter().SetUnits(units)
+    def get_units(self):
+        """ Get the stage units from the controller""" 
+        return self.default_units
 
 
 if __name__ == '__main__':
