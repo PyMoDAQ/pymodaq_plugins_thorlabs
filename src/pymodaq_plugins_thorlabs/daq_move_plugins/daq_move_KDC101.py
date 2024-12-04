@@ -69,6 +69,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         """
         if param.name() == 'units':
             self.axis_unit = self.controller.get_units()
+            self.settings.child(('units')).setValue(self.axis_unit)
         else:
             pass
 
