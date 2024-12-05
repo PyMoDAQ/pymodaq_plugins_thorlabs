@@ -122,7 +122,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
 
-        self.controller.move_rel(value.value(), 60000) #TODO: CHECK IF MOVE_REL IS IMPLEMENTED IN KDC101
+        self.controller.move_rel(value.value(), 60000) 
 
     def move_home(self):
         """Call the reference method of the controller"""
