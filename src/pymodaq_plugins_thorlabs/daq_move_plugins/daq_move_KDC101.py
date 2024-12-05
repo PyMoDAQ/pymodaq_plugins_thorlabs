@@ -68,7 +68,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == 'units':
-            self.controller.set_units(self.settings.child(('units')).value()) # DK - Is neting tuple (('units')) correct?
+            self.controller.set_units(self.settings.child(('units')).value()) # DK - Is nesting tuple (('units')) correct?
         else:
             pass
 
@@ -126,7 +126,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
     def move_home(self):
         """Call the reference method of the controller"""
 
-        self.controller.home(60000) # DK - Revise. This causes an error in initialization
+        self.controller.home(60000)
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
