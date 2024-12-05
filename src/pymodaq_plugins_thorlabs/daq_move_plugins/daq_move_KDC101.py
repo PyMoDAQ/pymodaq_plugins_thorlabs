@@ -34,8 +34,8 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]} # DK - add comma at the end
-                # {'title': 'Units:', 'name': 'units', 'type': 'string', 'value': _controller_units}  # DK - correct type. This causes an error in initialization
+                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]}, # DK - add comma at the end
+                  # {'title': 'Units:', 'name': 'units', 'type': 'list', "limits": ["mm", "um", "m", "nm"], "value": 'mm'}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axis_names, epsilon=_epsilon)
 
@@ -68,7 +68,8 @@ class DAQ_Move_KDC101(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == 'units':
-            self.controller.set_units(self.settings.child(('units')).value()) # DK - Is nesting tuple (('units')) correct?
+            self.controller.set_units(self.settings.child('units').value()) # DK - Is nesting tuple (('units')) correct?
+            # DK - if you update the units, also update _controller_units = xxx
         else:
             pass
 
@@ -86,7 +87,8 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.ini_stage_init(slave_controller=controller) 
+
+        self.ini_stage_init(slave_controller=controller)
 
         if self.is_master: 
             self.controller = KDC101()
