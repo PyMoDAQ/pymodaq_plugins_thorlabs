@@ -329,49 +329,7 @@ class Piezo(Kinesis):
     def stop(self):
         pass
 
-class KDC101(Kinesis):
-    default_units = ''
-    def __init__(self): 
-        self._device: KCube.KCubeDCServo = None
 
-    def connect(self, serial: int):
-        if serial in serialnumbers_kdc101:
-            self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
-            self._device.Connect(serial)
-            time.sleep(0.25)
-            self._device.StartPolling(250)
-            time.sleep(0.25)
-            self._device.EnableDevice()
-            time.sleep(0.25)
-
-            if not self._device.IsSettingsInitialized():
-                self._device.WaitForSettingsInitialized(10000)
-                assert self._device.IsSettingsInitialized() is True
-        
-        servo_config = self._device.LoadMotorConfiguration(serial)
-        logger.info(f"Servo Configuration: {servo_config}")
-
-    def get_position(self): 
-        return Decimal.ToDouble(self._device.get_DevicePosition())
-    
-    def move_abs(self, position: float, callback=None):
-        self._device.MoveTo(Decimal(position), callback)
-        
-    def move_rel(self, position: float, callback=None):
-        self._device.MoveRelative(KCube.KCubeDCServo.MoveDirection.Forward, Decimal(position), callback)
-
-    def home(self, callback=None):
-        self._device.Home(callback)
-
-    def stop(self):
-        self._device.Stop(0)
-
-    def set_units(self, units: str):
-        """ Set the stage units from the controller"""
-        self.default_units = self._device.get_UnitConverter().SetUnits(units)
-    def get_units(self):
-        """ Get the stage units from the controller""" 
-        return self.default_units
 
 
 if __name__ == '__main__':
