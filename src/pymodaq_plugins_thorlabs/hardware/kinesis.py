@@ -366,14 +366,6 @@ class KDC101(Kinesis):
     def stop(self):
         self._device.Stop(0)
 
-    def set_units(self, units: str):
-        """ Set the stage units from the controller"""
-        self.default_units = self._device.get_UnitConverter().SetUnits(units) # DK - correct or delete set_units method
-    def get_units(self):
-        """ Get the stage units from the controller""" 
-        return self.default_units # DK - inherit or follow the way Kinesit class does
-
-
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
     controller.connect(serialnumbers_brushless[0])

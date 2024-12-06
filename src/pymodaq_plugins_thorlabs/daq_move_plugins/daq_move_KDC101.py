@@ -34,9 +34,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]}, # DK - add comma at the end
-                  # {'title': 'Units:', 'name': 'units', 'type': 'list', "limits": ["mm", "um", "m", "nm"], "value": 'mm'}
-
+                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]},
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
@@ -67,11 +65,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'units':
-            self.controller.set_units(self.settings.child('units').value()) # DK - Is nesting tuple (('units')) correct?
-            # DK - if you update the units, also update _controller_units = xxx
-        else:
-            pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
