@@ -2,7 +2,7 @@ from pymodaq.control_modules.move_utility_classes import (
     DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator)
 from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.parameter import Parameter
-from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
+from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_inertial_motor, KIM101
 from pymodaq.utils.logger import set_logger, get_module_name
 
 class DAQ_Move_KIM101(DAQ_Move_base):
@@ -18,19 +18,19 @@ class DAQ_Move_KIM101(DAQ_Move_base):
          hardware library.
 
     """
-    _controller_units = Piezo.default_units
+    _controller_units = KIM101.default_units
     is_multiaxes = True
     _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]}
+                  'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0]}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
     def ini_attributes(self):
-        self.controller: Piezo = None
+        self.controller: KIM101 = None
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
