@@ -19,6 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionContro.TCube.InertialMotorCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -26,6 +27,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.TCube.InertialMotorCLI as InertialMotorCLI
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -322,6 +324,9 @@ class Piezo(Kinesis):
 
     def stop(self):
         pass
+
+class KIM101(Kinesis): 
+    def 
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
