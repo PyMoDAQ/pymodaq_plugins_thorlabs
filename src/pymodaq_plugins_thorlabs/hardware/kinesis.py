@@ -351,6 +351,10 @@ class KIM101(Kinesis):
     def stop(self): 
         pass
 
+    def close(self): 
+        self._device.StopPolling()
+        self._device.Disconnect()
+
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
