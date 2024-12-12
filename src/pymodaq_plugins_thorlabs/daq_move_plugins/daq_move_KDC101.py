@@ -34,7 +34,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]}
+                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]},
                 {'title': 'Units:', 'name': 'units', 'type': 'list', "limits": ["mm", "um", "m", "nm"], 
                     "value": 'mm'}
 
