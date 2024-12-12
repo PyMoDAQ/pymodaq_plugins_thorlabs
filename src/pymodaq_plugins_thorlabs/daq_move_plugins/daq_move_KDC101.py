@@ -34,7 +34,10 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]},
+                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]}
+                {'title': 'Units:', 'name': 'units', 'type': 'list', "limits": ["mm", "um", "m", "nm"], 
+                    "value": 'mm'}
+
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
@@ -65,7 +68,10 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        pass
+        if param.name() == 'units':
+            self.controller.set_units(self.settings.child(('units')).value())
+        else:
+            pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -81,8 +87,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-
-        self.ini_stage_init(slave_controller=controller)
+        self.ini_stage_init(slave_controller=controller) 
 
         if self.is_master: 
             self.controller = KDC101()
@@ -117,7 +122,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
 
-        self.controller.move_rel(value.value(), 60000) #TODO: CHECK IF MOVE_REL IS IMPLEMENTED IN KDC101
+        self.controller.move_rel(value.value(), 60000) 
 
     def move_home(self):
         """Call the reference method of the controller"""
@@ -133,4 +138,3 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
 if __name__ == '__main__':
     main(__file__)
-
