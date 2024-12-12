@@ -19,7 +19,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
-clr.AddReference("Thorlabs.MotionContro.KCube.InertialMotorCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.InertialMotorCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
