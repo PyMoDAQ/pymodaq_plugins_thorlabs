@@ -27,7 +27,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
-import Thorlabs.MotionControl.KCube.InertialMotorCLI as InertialMotorCLI
+import Thorlabs.MotionControl.KCube.InertialMotorCLI as InertialMotor
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -37,7 +37,7 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
-serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotorCLI.InertialMotor.DevicePrefix)]
+serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCube.DevicePrefix)] #or InertialMotor.KCube.InertialMotor.DevicePrefix
 
 
 class Kinesis:
@@ -327,7 +327,7 @@ class Piezo(Kinesis):
         pass
 
 class KIM101(Kinesis): 
-    default_units = 'mm'  # DK - KIM101 uses only V.
+    default_units = 'V'  
 
     def __init__(self):
         self._device: InertialMotorCLI.InertialMotor = None
