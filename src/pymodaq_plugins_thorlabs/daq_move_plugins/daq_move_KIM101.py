@@ -99,7 +99,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         value = self.check_bound(value)
         self.target_value = value
         value = self.set_position_with_scaling(value) 
-        self.controller.move_abs(value.value())
+        self.controller.move_abs(value.value(), axis=self.axis)
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -108,10 +108,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         ----------
         value: (DataActuator) value of the relative target positioning
         """
-        value = self.check_bound(self.current_value + value) - self.current_value
-        self.target_value = value + self.current_value
-        value = self.set_position_relative_with_scaling(value) # DK - If you reuse move_abs, use set_position_with_scaling.
-        self.controller.move_abs(self.target_value.value()) # DK - use an attribute of the scaled `value`
+        pass
 
     def move_home(self):
         """Call the reference method of the controller"""
