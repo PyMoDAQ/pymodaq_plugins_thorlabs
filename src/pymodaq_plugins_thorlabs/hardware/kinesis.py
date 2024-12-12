@@ -327,7 +327,7 @@ class Piezo(Kinesis):
         pass
 
 class KIM101(Kinesis): 
-    default_units = 'mm'  # KIM101 uses only V.
+    default_units = 'mm'  # DK - KIM101 uses only V.
 
     def __init__(self):
         self._device: InertialMotorCLI.InertialMotor = None
