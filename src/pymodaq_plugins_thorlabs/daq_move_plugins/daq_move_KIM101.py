@@ -61,7 +61,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == 'channel':
-            self.axis_unit = self.controller.get_channel(self.axis_value)
+            self.axis_unit = self.controller.get_channel(self.axis_values['channel'])
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
