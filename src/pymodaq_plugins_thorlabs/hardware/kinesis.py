@@ -37,7 +37,8 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
-serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCube.DevicePrefix)] #or InertialMotor.KCube.InertialMotor.DevicePrefix
+# TODO fix serialnumbers_inertial_motor
+serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCubeInertialMotor.DevicePrefix_KIM101)] #or InertialMotor.KCube.InertialMotor.DevicePrefix
 
 
 class Kinesis:
@@ -330,19 +331,25 @@ class KIM101(Kinesis):
     default_units = 'V'  
 
     def __init__(self):
-        self._device: InertialMotorCLI.InertialMotor = None
-        self._channel = [0,0]
+        self._device:  InertialMotor.KCubeInertialMotor = None
+        self._channel = []
     
     def connect(self, serial: int): 
         if serial in serialnumbers_inertial_motor: 
-            self._device = InertialMotorCLI.InertialMotor.CreateKcubeInertialMotor(serial)
-            self._device.Connect(serial) 
+            self._device = InertialMotor.KCubeInertialMotor.CreateKCubeInertialMotor(serial)
+            self._device.Connect(serial)
             self._device.WaitForSettingsInitialized(5000)
             self._device.StartPolling(250)
-            self._device.EnableDevice() 
+            self._device.EnableDevice()
+            self._channel = [
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel1,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel2,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel3,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel4
+            ]
 
-    def move_abs(self, position: float, channel: int): 
-        self._device.MoveTo(channel, Decimal(position), 6000)
+    def move_abs(self, position: float, channel: int):  # DK - position should be int
+        self._device.MoveTo(channel, Decimal(position), 6000) # DK - Decimal(position) should be position
         self._channel[channel - 1] = channel
 
     def get_position(self, channel: int):
