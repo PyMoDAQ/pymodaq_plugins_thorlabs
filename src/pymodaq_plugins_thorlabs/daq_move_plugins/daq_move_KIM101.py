@@ -59,7 +59,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'axis' 
+        if param.name() == 'axis':
             self.axis = param.value()
 
     def ini_stage(self, controller=None):
@@ -112,7 +112,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.home()
+        self.controller.home(self.axis)
 
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
