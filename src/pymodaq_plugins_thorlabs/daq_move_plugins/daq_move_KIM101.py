@@ -25,7 +25,8 @@ class DAQ_Move_KIM101(DAQ_Move_base):
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0]}
+                  'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0]}, 
+                  {'title': 'Channel:', 'name': 'channel', 'type': 'int', 'value': 1, 'default': 1}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
@@ -59,8 +60,8 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'axis':
-            self.axis_unit = self.controller.get_units(self.axis_value)
+        if param.name() == 'channel':
+            self.axis_unit = self.controller.get_channel(self.axis_value)
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -78,7 +79,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         """
 
         if self.is_master:
-            self.controller = Piezo()
+            self.controller = KIM101()
             self.controller.connect(self.settings['serial_number'])
         else:
             self.controller = controller
