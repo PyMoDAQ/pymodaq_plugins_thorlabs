@@ -331,6 +331,7 @@ class KIM101(Kinesis):
 
     def __init__(self):
         self._device: InertialMotorCLI.InertialMotor = None
+        self._channel = 1
     
     def connect(self, serial: int): 
         if serial in serialnumbers_inertial_motor: 
