@@ -20,13 +20,13 @@ class DAQ_Move_KIM101(DAQ_Move_base):
     """
     _controller_units = KIM101.default_units
     is_multiaxes = True
-    _axes_names = {'1': 1}
+    _axes_names = {'1': 1} # DK - Add more. KIM101 has 4 channels
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
                   'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0]}, 
-                  {'title': 'Channel:', 'name': 'channel', 'type': 'int', 'value': 1, 'default': 1}
+                  {'title': 'Channel:', 'name': 'channel', 'type': 'int', 'value': 1, 'default': 1} # DK - delete this line. channel will be handled in multiaxes feature.
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
@@ -60,7 +60,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'channel':
+        if param.name() == 'channel': # DK - delete this statement accordingly.
             self.axis_unit = self.controller.get_channel(self.axis_values['channel'])
 
     def ini_stage(self, controller=None):
@@ -86,7 +86,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
 
         self.axis_unit = self._controller_units
 
-        info = f'{self.controller.name} - {self.controller.serial_number}'
+        info = f'{self.controller.name} - {self.controller.serial_number}' # DK - self.controller.serial_number should be corrected because self.controller does not have a property of `serial_number`
         initialized = True
         return info, initialized
 
@@ -111,8 +111,8 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         """
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
-        value = self.set_position_relative_with_scaling(value)
-        self.controller.move_abs(self.target_value.value())
+        value = self.set_position_relative_with_scaling(value) # DK - If you reuse move_abs, use set_position_with_scaling.
+        self.controller.move_abs(self.target_value.value()) # DK - use an attribute of the scaled `value`
 
     def move_home(self):
         """Call the reference method of the controller"""
