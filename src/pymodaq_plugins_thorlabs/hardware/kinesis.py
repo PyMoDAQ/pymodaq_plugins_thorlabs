@@ -331,7 +331,7 @@ class KIM101(Kinesis):
 
     def __init__(self):
         self._device: InertialMotorCLI.InertialMotor = None
-        self._channel = 1
+        self._channel = [0,0]
     
     def connect(self, serial: int): 
         if serial in serialnumbers_inertial_motor: 
@@ -340,17 +340,23 @@ class KIM101(Kinesis):
             self._device.WaitForSettingsInitialized(5000)
             self._device.StartPolling(250)
             self._device.EnableDevice() 
+
     def move_abs(self, position: float, channel: int): 
         self._device.MoveTo(channel, Decimal(position), 6000)
+        self._channel[channel - 1] = channel
 
     def get_position(self, channel: int):
         return Decimal.ToDouble(self._device.GetPosition(channel))
 
     def home(self, channel: int): 
         self._device.SetPositionAs(channel, Decimal(0))
+        self._channel[channel - 1] = channel
 
     def stop(self): 
         pass
+
+    def get_channel(self):
+        return self._channel
 
     def close(self): 
         self._device.StopPolling()
