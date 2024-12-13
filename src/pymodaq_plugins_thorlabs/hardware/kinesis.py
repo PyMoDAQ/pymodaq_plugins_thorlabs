@@ -342,10 +342,10 @@ class KIM101(Kinesis):
             self._device.StartPolling(250)
             self._device.EnableDevice()
             self._channel = [
-                InertialMotor.InertialMotorStatus.MotorChannels.Channel1,
-                InertialMotor.InertialMotorStatus.MotorChannels.Channel2,
-                InertialMotor.InertialMotorStatus.MotorChannels.Channel3,
-                InertialMotor.InertialMotorStatus.MotorChannels.Channel4
+                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel1),
+                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel2),
+                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel3),
+                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel4)
             ]
 
     def move_abs(self, position: float, channel: int):  # DK - position should be int
