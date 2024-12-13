@@ -328,7 +328,7 @@ class Piezo(Kinesis):
         pass
 
 class KIM101(Kinesis): 
-    default_units = 'V'  
+    default_units = ' '
 
     def __init__(self):
         self._device:  InertialMotor.KCubeInertialMotor = None
