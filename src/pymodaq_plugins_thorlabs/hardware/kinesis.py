@@ -348,7 +348,7 @@ class KIM101(Kinesis):
                 InertialMotor.InertialMotorStatus.MotorChannels.Channel4
             ]
 
-    def move_abs(self, position: float, channel: int):  # DK - position should be int
+    def move_abs(self, position: int, channel: int):  # DK - position should be int
         self._device.MoveTo(self._channel[channel-1], position, 6000)
 
     def get_position(self, channel: int):
