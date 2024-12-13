@@ -40,7 +40,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         DataActuator: The position obtained after scaling conversion.
         """
         pos = DataActuator(
-            data=self.controller.get_position(),
+            data=self.controller.get_position(channel=self.axis),   
             units=self.controller.get_units()
         )
         pos = self.get_position_with_scaling(pos)
