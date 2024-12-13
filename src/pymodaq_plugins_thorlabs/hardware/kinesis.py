@@ -342,27 +342,26 @@ class KIM101(Kinesis):
             self._device.StartPolling(250)
             self._device.EnableDevice()
             self._channel = [
-                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel1),
-                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel2),
-                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel3),
-                int(InertialMotor.InertialMotorStatus.MotorChannels.Channel4)
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel1,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel2,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel3,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel4
             ]
 
     def move_abs(self, position: float, channel: int):  # DK - position should be int
         self._device.MoveTo(self._channel[channel-1], position, 6000)
 
     def get_position(self, channel: int):
-        return Decimal.ToDouble(self._device.GetPosition(channel))
+        return self._device.GetPosition(self._channel[channel-1])
 
     def home(self, channel: int): 
-        self._device.SetPositionAs(channel, Decimal(0))
-        self._channel[channel - 1] = channel
+        self._device.MoveTo(self._channel[channel-1], 0, 6000)
 
     def stop(self): 
         pass
 
-    def get_channel(self, channel: int):
-        return self._channel[channel - 1]
+    # def get_channel(self, channel: int):
+    #     return self._channel[channel - 1]
 
     def close(self): 
         self._device.StopPolling()
