@@ -349,8 +349,7 @@ class KIM101(Kinesis):
             ]
 
     def move_abs(self, position: float, channel: int):  # DK - position should be int
-        self._device.MoveTo(channel, Decimal(position), 6000) # DK - Decimal(position) should be position
-        self._channel[channel - 1] = channel
+        self._device.MoveTo(self._channel[channel-1], position, 6000)
 
     def get_position(self, channel: int):
         return Decimal.ToDouble(self._device.GetPosition(channel))
