@@ -362,8 +362,8 @@ class KIM101(Kinesis):
     def stop(self): 
         pass
 
-    def get_channel(self):
-        return self._channel
+    def get_channel(self, channel: int):
+        return self._channel[channel - 1]
 
     def close(self): 
         self._device.StopPolling()
