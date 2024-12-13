@@ -88,7 +88,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
         self.axis_unit = self._controller_units
 
-        info = f'{self.controller.name} - {self.controller.serial_number}'
+        info = "KIM101 Initialized"
         initialized = True
         return info, initialized
 
