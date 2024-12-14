@@ -6,6 +6,7 @@ from System import Decimal
 from System import Action
 from System import UInt64
 from System import UInt32
+import logging
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
@@ -351,6 +352,18 @@ class KIM101(Kinesis):
     def move_abs(self, position: int, channel: int):  # DK - position should be int
         self._device.MoveTo(self._channel[channel-1], position, 6000)
 
+    def move_rel(self, increment: int, channel: int):
+        target_position = self.get_position(channel) + increment
+        while (increment != 0):
+            if (increment > 0): 
+                step = min(increment, 1) 
+            else: 
+                step = max(increment, -1)
+            position_new = self.get_position(channel) + step
+            self.move_abs(position_new, channel)
+            increment = target_position - self.get_position(channel)
+
+    
     def get_position(self, channel: int):
         return self._device.GetPosition(self._channel[channel-1])
 
