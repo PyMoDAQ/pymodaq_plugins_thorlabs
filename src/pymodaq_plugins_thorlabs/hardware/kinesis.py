@@ -18,22 +18,26 @@ clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
 clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
 import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
-
+import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 
 Device.DeviceManagerCLI.BuildDeviceList()
-serialnumbers_integrated_stepper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-serialnumbers_flipper = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_brushless = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
+serialnumbers_integrated_stepper = [str(ser) for ser in
+                                    Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
+serialnumbers_flipper = [str(ser) for ser in
+                         Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
+serialnumbers_brushless = [str(ser) for ser in
+                           Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
 
 class Kinesis:
-
     default_units = ''
 
     def __init__(self):
@@ -289,6 +293,35 @@ class Flipper(Kinesis):
             position = 1
         return position
 
+
+class Piezo(Kinesis):
+    default_units = 'V'
+
+    def __init__(self):
+        self._device: KCubePiezo.KCubePiezo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_piezo:
+            self._device = (
+                KCubePiezo.KCubePiezo.CreateKCubePiezo(serial))
+            self._device.Connect(serial)
+            self._device.StartPolling(250)
+            self._device.EnableDevice()
+            self._device.GetPiezoConfiguration(serial)
+        else:
+            raise ValueError('Invalid Serial Number')
+
+    def move_abs(self, position: float):
+        self._device.SetOutputVoltage(Decimal(position))
+
+    def home(self):
+        self.move_abs(0.0)
+
+    def get_position(self) -> float:
+        return Decimal.ToDouble(self._device.GetOutputVoltage())
+
+    def stop(self):
+        pass
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
