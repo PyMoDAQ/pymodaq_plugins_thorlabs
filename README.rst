@@ -14,7 +14,7 @@ pymodaq_plugins_thorlabs (Thorlabs Instruments)
    :alt: Publication Status
 
 Set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10CR1 (stepper rotation actuator), Kinesis Flipper,
-Kinesis KSP100, Kinesis KPZ101, Camera DCx, Scientific cameras, Powermeters using the TLPM library)
+Kinesis KSP100, Kinesis KPZ101, Camera DCx, Scientific cameras, Powermeters using the TLPM library), Compact CCD Spectrometers
 
 
 Authors
@@ -46,6 +46,10 @@ Viewer0D
 
 * **Kinesis_KPA101**: Position Sensitive Photodetector Kinesis series (KPA101)
 * **TLPMPowermeter**: TLPM dll compatible series (PM101x, PM102x, PM103x, PM100USB, PM16-Series, PM160, PM400, PM100A, PM100D, PM200)
+
+Viewer1D
+++++++++
+* **CCSXXX**: Compact CCD Spectrometers (CCS100, CCS175, CCS200). Tested with CCS175/M
 
 Viewer2D
 ++++++++
