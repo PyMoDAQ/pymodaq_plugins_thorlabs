@@ -65,7 +65,7 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
 
         self.dte_signal_temp.emit(DataToExport(name='CCSXXX',
                                                data=[DataFromPlugins(name='Spectrum',
-                                                                     data=np.zeros((3648)),
+                                                                     data=np.zeros(len(data_x_axis)),
                                                                      dim='Data1D', labels=['Intensity'],
                                                                      axes=[self.x_axis])]))
 
