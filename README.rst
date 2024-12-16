@@ -24,6 +24,7 @@ Authors
 * David Bresteau (david.bresteau@cea.fr)
 * Nicolas Tappy (nicolas.tappy@epfl.ch)
 * Romain Geneaux (romain.geneaux@cea.fr)
+* Daichi Kozawa (kozawa.daichi@nims.go.jp)
 
 Instruments
 ===========
