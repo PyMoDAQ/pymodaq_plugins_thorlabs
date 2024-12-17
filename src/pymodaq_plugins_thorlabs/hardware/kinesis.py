@@ -358,7 +358,7 @@ class KDC101(Kinesis):
         self._device.MoveTo(Decimal(position), callback)
         
     def move_rel(self, position: float, callback=None):
-        self._device.MoveRelative(KCube.KCubeDCServo.MoveDirection.Forward, Decimal(position), callback) # DK - KCube.KCubeDCServo.MoveDirection.Forward should be corrected
+        self._device.MoveRelative(Generic.MoveDirection.Forward, Decimal(position), callback) # DK - KCube.KCubeDCServo.MoveDirection.Forward should be corrected
 
     def home(self, callback=None):
         self._device.Home(callback)
