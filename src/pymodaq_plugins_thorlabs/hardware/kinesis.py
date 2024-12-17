@@ -335,7 +335,7 @@ class DCservo(Kinesis):
         self._device: KCube.KCubeDCServo = None
 
     def connect(self, serial: int):
-        if serial in serialnumbers_kdc101:
+        if serial in serialnumbers_dcServo:
             self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
             self._device.Connect(serial)
             time.sleep(0.25)
