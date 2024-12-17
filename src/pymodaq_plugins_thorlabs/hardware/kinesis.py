@@ -40,7 +40,7 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
-serialnumbers_kdc101 = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCube.KCubeDCServo.DevicePrefix)]
+serialnumbers_dcServo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCube.KCubeDCServo.DevicePrefix)]
 
 
 class Kinesis:
@@ -335,7 +335,7 @@ class DCservo(Kinesis):
         self._device: KCube.KCubeDCServo = None
 
     def connect(self, serial: int):
-        if serial in serialnumbers_kdc101:
+        if serial in serialnumbers_dcServo:
             self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
             self._device.Connect(serial)
             time.sleep(0.25)

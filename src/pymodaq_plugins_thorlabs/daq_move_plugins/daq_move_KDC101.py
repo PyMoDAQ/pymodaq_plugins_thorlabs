@@ -3,7 +3,7 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  
 from pymodaq.utils.daq_utils import ThreadCommand 
 from pymodaq.utils.parameter import Parameter
-from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_kdc101, DCservo as KDC101
+from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_dcServo, DCservo as KDC101
 
 
 class DAQ_Move_KDC101(DAQ_Move_base):
@@ -34,7 +34,7 @@ class DAQ_Move_KDC101(DAQ_Move_base):
 
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kdc101, 'value': serialnumbers_kdc101[0]},
+                  'limits': serialnumbers_dcServo, 'value': serialnumbers_dcServo[0]},
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
