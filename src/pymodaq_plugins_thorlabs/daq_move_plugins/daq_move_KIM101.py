@@ -59,8 +59,7 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'axis':# DK - delete this. daq_move covers this.
-            self.axis = param.value()
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
