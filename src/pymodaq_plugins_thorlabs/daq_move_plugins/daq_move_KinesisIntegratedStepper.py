@@ -11,7 +11,7 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
     """
 
     """
-    _controller_units = 'degrees'
+    _controller_units = '°'
     _epsilon = 0.05
 
     is_multiaxes = False
