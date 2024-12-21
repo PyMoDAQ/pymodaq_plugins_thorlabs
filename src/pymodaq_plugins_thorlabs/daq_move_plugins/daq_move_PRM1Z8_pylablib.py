@@ -18,7 +18,7 @@ class DAQ_Move_PRM1Z8_pylablib(DAQ_Move_base):
         *params*          dictionnary
         =============== ==============
     """
-    _controller_units = 'deg'
+    _controller_units = '°'
     is_multiaxes = False
     _stage_names = []
     _epsilon = 0.005

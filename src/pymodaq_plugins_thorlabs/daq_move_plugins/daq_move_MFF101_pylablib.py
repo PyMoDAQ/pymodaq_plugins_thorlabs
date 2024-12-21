@@ -16,7 +16,7 @@ class DAQ_Move_MFF101_pylablib(DAQ_Move_base):
         *params*          dictionnary
         =============== ==============
     """
-    _controller_units = 'binary position'
+    _controller_units = ''
 
     _dvc = Thorlabs.list_kinesis_devices()
     serialnumbers = [d[0] for d in _dvc if d[1] == 'APT Filter Flipper']
