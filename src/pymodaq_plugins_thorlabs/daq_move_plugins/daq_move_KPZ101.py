@@ -22,7 +22,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     """
     _controller_units = Piezo.default_units
-    is_multiaxes = True
+    is_multiaxes = False
     _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
