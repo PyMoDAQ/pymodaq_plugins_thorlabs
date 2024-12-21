@@ -22,13 +22,14 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
 
     """
     _controller_units = Piezo.default_units
-    is_multiaxes = True
+    is_multiaxes = False
     _axes_names = {'1': 1}
     _epsilon = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]}
+                  'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]},
+                  {'title': 'Units:', 'name': 'units', 'type': 'string', 'value': _controller_units}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
@@ -62,7 +63,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == 'axis':
+        if param.name() == 'units':
             self.axis_unit = self.controller.get_units(self.axis_value)
 
     def ini_stage(self, controller=None):
@@ -113,8 +114,8 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         """
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
-        value = self.set_position_relative_with_scaling(value)
-        self.controller.move_abs(self.target_value.value())
+        value = self.set_position_with_scaling(self.target_value)
+        self.controller.move_abs(value.value())
 
     def move_home(self):
         """Call the reference method of the controller"""

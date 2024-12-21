@@ -24,6 +24,7 @@ Authors
 * David Bresteau (david.bresteau@cea.fr)
 * Nicolas Tappy (nicolas.tappy@epfl.ch)
 * Romain Geneaux (romain.geneaux@cea.fr)
+* Amelie DeShazer (adeshazer@wisc.edu)
 * Astha Khandelwal (asthak@iisc.ac.in)
 * Daichi Kozawa (kozawa.daichi@nims.go.jp)
 
