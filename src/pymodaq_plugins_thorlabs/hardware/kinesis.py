@@ -349,7 +349,7 @@ class KIM101(Kinesis):
                 InertialMotor.InertialMotorStatus.MotorChannels.Channel4
             ]
 
-    def move_abs(self, position: int, channel: int):  # DK - position should be int
+    def move_abs(self, position: int, channel: int):  
         self._device.MoveTo(self._channel[channel-1], position, 6000)
 
     def move_rel(self, increment: int, channel: int):
@@ -372,9 +372,6 @@ class KIM101(Kinesis):
 
     def stop(self): 
         pass
-
-    # def get_channel(self, channel: int):
-    #     return self._channel[channel - 1]
 
     def close(self): 
         self._device.StopPolling()
