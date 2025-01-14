@@ -39,7 +39,7 @@ serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
-serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCubeInertialMotor.DevicePrefix_KIM101)] #or InertialMotor.KCube.InertialMotor.DevicePrefix
+serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCubeInertialMotor.DevicePrefix_KIM101)] 
 
 
 class Kinesis:
