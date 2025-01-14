@@ -358,7 +358,7 @@ class DCservo(Kinesis):
         self._device.MoveTo(Decimal(position), callback)
         
     def move_rel(self, position: float, callback=None):
-        self._device.MoveRelative(Generic.MoveDirection.Forward, Decimal(position), callback)
+        self._device.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), callback)
 
     def home(self, callback=None):
         self._device.Home(callback)
