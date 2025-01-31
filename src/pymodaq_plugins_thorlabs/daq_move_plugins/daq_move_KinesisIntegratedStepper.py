@@ -16,13 +16,13 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
 
     is_multiaxes = False
 
-    stage_names = []
+    stage_names = ['']
 
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_integrated_stepper},
               {'title': 'Backlash:', 'name': 'backlash', 'type': 'float', 'value': 0, },
-              ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
+              ] + comon_parameters_fun(is_multiaxes, axis_names=stage_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: IntegratedStepper = None
