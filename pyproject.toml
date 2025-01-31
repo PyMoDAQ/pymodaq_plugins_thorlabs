@@ -21,6 +21,7 @@ dependencies = [
     'pymodaq>=4.4.0',
     'opencv-python',
     'elliptec',
+    'pymodaq_utils',
 ]
 
 authors = [
