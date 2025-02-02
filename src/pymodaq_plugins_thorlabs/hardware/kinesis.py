@@ -1,6 +1,9 @@
 import clr
 import sys
 from typing import Dict
+import time
+import logging
+logger = logging.getLogger(__name__)
 
 from System import Decimal
 from System import Action
@@ -19,6 +22,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -26,6 +30,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.KCube.DCServoCLI as KCube
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -35,6 +40,7 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
+serialnumbers_dcServo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCube.KCubeDCServo.DevicePrefix)]
 
 
 class Kinesis:
@@ -322,6 +328,43 @@ class Piezo(Kinesis):
 
     def stop(self):
         pass
+
+class DCservo(Kinesis):
+    default_units = 'mm'
+    def __init__(self): 
+        self._device: KCube.KCubeDCServo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_dcServo:
+            self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
+            self._device.Connect(serial)
+            time.sleep(0.25)
+            self._device.StartPolling(250)
+            time.sleep(0.25)
+            self._device.EnableDevice()
+            time.sleep(0.25)
+
+            if not self._device.IsSettingsInitialized():
+                self._device.WaitForSettingsInitialized(10000)
+                assert self._device.IsSettingsInitialized() is True
+        
+        servo_config = self._device.LoadMotorConfiguration(serial)
+        logger.info(f"Servo Configuration: {servo_config}")
+
+    def get_position(self): 
+        return Decimal.ToDouble(self._device.get_DevicePosition())
+    
+    def move_abs(self, position: float, callback=None):
+        self._device.MoveTo(Decimal(position), callback)
+        
+    def move_rel(self, position: float, callback=None):
+        self._device.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), callback)
+
+    def home(self, callback=None):
+        self._device.Home(callback)
+
+    def stop(self):
+        self._device.Stop(0)
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
