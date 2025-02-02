@@ -6,6 +6,7 @@ from System import Decimal
 from System import Action
 from System import UInt64
 from System import UInt32
+import logging
 
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
@@ -19,6 +20,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.InertialMotorCLI")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -26,6 +28,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.KCube.InertialMotorCLI as InertialMotor
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -35,6 +38,8 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
+
+serialnumbers_inertial_motor = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(InertialMotor.KCubeInertialMotor.DevicePrefix_KIM101)] 
 
 
 class Kinesis:
@@ -322,6 +327,56 @@ class Piezo(Kinesis):
 
     def stop(self):
         pass
+
+class KIM101(Kinesis): 
+    default_units = ' '
+
+    def __init__(self):
+        self._device:  InertialMotor.KCubeInertialMotor = None
+        self._channel = []
+    
+    def connect(self, serial: int): 
+        if serial in serialnumbers_inertial_motor: 
+            self._device = InertialMotor.KCubeInertialMotor.CreateKCubeInertialMotor(serial)
+            self._device.Connect(serial)
+            self._device.WaitForSettingsInitialized(5000)
+            self._device.StartPolling(250)
+            self._device.EnableDevice()
+            self._channel = [
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel1,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel2,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel3,
+                InertialMotor.InertialMotorStatus.MotorChannels.Channel4
+            ]
+
+    def move_abs(self, position: int, channel: int):  
+        self._device.MoveTo(self._channel[channel-1], position, 6000)
+
+    def move_rel(self, increment: int, channel: int):
+        target_position = self.get_position(channel) + increment
+        while (increment != 0):
+            if (increment > 0): 
+                step = min(increment, 1) 
+            else: 
+                step = max(increment, -1)
+            position_new = self.get_position(channel) + step
+            self.move_abs(position_new, channel)
+            increment = target_position - self.get_position(channel)
+
+    
+    def get_position(self, channel: int):
+        return self._device.GetPosition(self._channel[channel-1])
+
+    def home(self, channel: int): 
+        self._device.MoveTo(self._channel[channel-1], 0, 6000)
+
+    def stop(self): 
+        pass
+
+    def close(self): 
+        self._device.StopPolling()
+        self._device.Disconnect()
+
 
 if __name__ == '__main__':
     controller = BrushlessDCMotor()
