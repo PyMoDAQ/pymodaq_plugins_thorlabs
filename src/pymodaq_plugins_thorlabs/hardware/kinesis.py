@@ -1,6 +1,7 @@
 import clr
 import sys
 from typing import Dict
+from time import sleep
 
 from System import Decimal
 from System import Action
@@ -19,6 +20,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.TCube.DCServoCLI ")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -26,6 +28,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.TCube.DCServoCLI as TCubeDCServo
 
 Device.DeviceManagerCLI.BuildDeviceList()
 serialnumbers_integrated_stepper = [str(ser) for ser in
@@ -35,6 +38,8 @@ serialnumbers_flipper = [str(ser) for ser in
 serialnumbers_brushless = [str(ser) for ser in
                            Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
 serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
+
+serialnumbers_tcube_dcservo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(TCubeDCServo.TCubeDCServo.DevicePrefix)]
 
 
 class Kinesis:
@@ -323,19 +328,53 @@ class Piezo(Kinesis):
     def stop(self):
         pass
 
+
+class DCServoTCube(Kinesis):
+    """ Specific Kinesis class for Brushless DC Motors"""
+    n_channels = 1
+    default_units = 'mm'
+
+    def __init__(self):
+        super().__init__()
+        self._device: TCubeDCServo.TCubeDCServo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_tcube_dcservo:
+            self._device = (
+                TCubeDCServo.TCubeDCServo.CreateTCubeDCServo(serial))
+            super().connect(serial)
+            self._device.EnableDevice()
+            sleep(0.5)
+            self._device.LoadMotorConfiguration(serial)
+            self.motor_settings = self._device.MotorDeviceSettings
+
+
+    def get_position(self) -> float:
+        return Decimal.ToDouble(self._device.get_DevicePosition())
+
+
+
+
 if __name__ == '__main__':
-    controller = BrushlessDCMotor()
-    controller.connect(serialnumbers_brushless[0])
-    motor = controller.init_channel(1)
-    print(motor.get_units())
-    motor.home()
-    print(f'homing: {motor.is_homing}')
-    print(f'Moving: {motor.is_moving}')
-    print(motor.get_target_position())
+    if False:
+        controller = BrushlessDCMotor()
+        controller.connect(serialnumbers_brushless[0])
+        motor = controller.init_channel(1)
+        print(motor.get_units())
+        motor.home()
+        print(f'homing: {motor.is_homing}')
+        print(f'Moving: {motor.is_moving}')
+        print(motor.get_target_position())
 
-    motor.move_abs(87, motor.move_done_callback)
-    print(f'homing: {motor.is_homing}')
-    print(f'Moving: {motor.is_moving}')
-    print(motor.get_target_position())
+        motor.move_abs(87, motor.move_done_callback)
+        print(f'homing: {motor.is_homing}')
+        print(f'Moving: {motor.is_moving}')
+        print(motor.get_target_position())
 
-    controller.close()
+        controller.close()
+
+    elif True:
+        controller = DCServoTCube()
+        controller.connect(serialnumbers_tcube_dcservo[0])
+
+        controller.close()
