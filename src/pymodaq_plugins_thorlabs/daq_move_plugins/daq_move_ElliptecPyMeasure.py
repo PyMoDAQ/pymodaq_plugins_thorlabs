@@ -31,7 +31,7 @@ class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
          hardware library
 
     """
-    _controller_units = ''
+    _controller_units = '°'
 
     is_multiaxes = True
     axes_names = [str(ind) for ind in range(4)]
