@@ -28,7 +28,7 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
          hardware library
 
     """
-    _controller_units = ''
+    _controller_units = '°'
     is_multiaxes = True
     axes_names = ['0']
     _epsilon = 0.1
