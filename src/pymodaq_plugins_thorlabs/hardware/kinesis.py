@@ -30,16 +30,17 @@ import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.TCube.DCServoCLI as TCubeDCServo
 
-Device.DeviceManagerCLI.BuildDeviceList()
-serialnumbers_integrated_stepper = [str(ser) for ser in
-                                    Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-serialnumbers_flipper = [str(ser) for ser in
-                         Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_brushless = [str(ser) for ser in
-                           Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
-serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
-serialnumbers_tcube_dcservo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(TCubeDCServo.TCubeDCServo.DevicePrefix)]
+# First, build device list
+Device.DeviceManagerCLI.BuildDeviceList()
+
+# Then, get serial numbers for each category
+_sn_list = lambda prefix: [str(sn) for sn in Device.DeviceManagerCLI.GetDeviceList(prefix)]
+serialnumbers_integrated_stepper = _sn_list(Integrated.CageRotator.DevicePrefix)
+serialnumbers_flipper = _sn_list(FilterFlipper.FilterFlipper.DevicePrefix)
+serialnumbers_brushless = _sn_list(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)
+serialnumbers_piezo = _sn_list(KCubePiezo.KCubePiezo.DevicePrefix)
+serialnumbers_tcube_dcservo = _sn_list(TCubeDCServo.TCubeDCServo.DevicePrefix)
 
 
 class Kinesis:
