@@ -21,6 +21,7 @@ clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
 clr.AddReference("Thorlabs.MotionControl.TCube.DCServoCLI ")
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI ")
 
 import Thorlabs.MotionControl.FilterFlipperCLI as FilterFlipper
 import Thorlabs.MotionControl.IntegratedStepperMotorsCLI as Integrated
@@ -29,17 +30,20 @@ import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
 import Thorlabs.MotionControl.TCube.DCServoCLI as TCubeDCServo
+import Thorlabs.MotionControl.KCube.DCServoCLI as KCubeDCServo
 
+
+# First, build device list
 Device.DeviceManagerCLI.BuildDeviceList()
-serialnumbers_integrated_stepper = [str(ser) for ser in
-                                    Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
-serialnumbers_flipper = [str(ser) for ser in
-                         Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
-serialnumbers_brushless = [str(ser) for ser in
-                           Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
-serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
 
-serialnumbers_tcube_dcservo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(TCubeDCServo.TCubeDCServo.DevicePrefix)]
+# Then, get serial numbers for each category
+_sn_list = lambda prefix: [str(sn) for sn in Device.DeviceManagerCLI.GetDeviceList(prefix)]
+serialnumbers_integrated_stepper = _sn_list(Integrated.CageRotator.DevicePrefix)
+serialnumbers_flipper = _sn_list(FilterFlipper.FilterFlipper.DevicePrefix)
+serialnumbers_brushless = _sn_list(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)
+serialnumbers_piezo = _sn_list(KCubePiezo.KCubePiezo.DevicePrefix)
+serialnumbers_tcube_dcservo = _sn_list(TCubeDCServo.TCubeDCServo.DevicePrefix)
+serialnumbers_kcube_dcservo = _sn_list(KCubeDCServo.KCubeDCServo.DevicePrefix)
 
 
 class Kinesis:
@@ -353,6 +357,28 @@ class DCServoTCube(Kinesis):
         return Decimal.ToDouble(self._device.get_DevicePosition())
 
 
+class DCServoKCube(Kinesis):
+    """ Specific Kinesis class for KCube controllers"""
+    n_channels = 1
+    default_units = 'mm'
+
+    def __init__(self):
+        super().__init__()
+        self._device: KCubeDCServo.KCubeDCServo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_kcube_dcservo:
+            self._device = (
+                KCubeDCServo.KCubeDCServo.CreateKCubeDCServo(serial))
+            super().connect(serial)
+            self._device.EnableDevice()
+            sleep(0.5)
+            self._device.LoadMotorConfiguration(serial)
+            self.motor_settings = self._device.MotorDeviceSettings
+
+
+    def get_position(self) -> float:
+        return Decimal.ToDouble(self._device.get_DevicePosition())
 
 
 if __name__ == '__main__':
