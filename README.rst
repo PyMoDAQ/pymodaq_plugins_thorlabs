@@ -27,6 +27,7 @@ Authors
 * Amelie DeShazer (adeshazer@wisc.edu)
 * Astha Khandelwal (asthak@iisc.ac.in)
 * Daichi Kozawa (kozawa.daichi@nims.go.jp)
+* Arnaud Meyer (arnaud.meyer@univ-st-etienne.fr)
 
 Instruments
 ===========
@@ -43,6 +44,7 @@ Actuators
 * **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 * **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
 * **DCServoTCube**: DC Servo motors controlled using a TCube (tested with TDC001 and MTS50 motor)
+* **DCServoKCube**: DC Servo motors controlled using a KCube (tested with KDC101)
 
 Viewer0D
 ++++++++
