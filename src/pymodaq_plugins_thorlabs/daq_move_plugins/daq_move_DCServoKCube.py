@@ -20,13 +20,16 @@ class DAQ_Move_DCServoKCube(DAQ_Move_DCServoTCube):
 
     """
     _controller_units = DCServoKCube.default_units
-    params = [
-                 {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kcube_dcservo, 'value': serialnumbers_kcube_dcservo[0]}
+    if serialnumbers_kcube_dcservo == []:
+        logger.warning('No Thorlabs KCube DC Servo found! Check the connection')
+    else:    
+        params = [
+                    {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
+                    'limits': serialnumbers_kcube_dcservo, 'value': serialnumbers_kcube_dcservo[0]}
 
-             ] + comon_parameters_fun(DAQ_Move_DCServoTCube.is_multiaxes,
-                                      axes_names=DAQ_Move_DCServoTCube._axes_names,
-                                      epsilon=DAQ_Move_DCServoTCube._epsilon)
+                ] + comon_parameters_fun(DAQ_Move_DCServoTCube.is_multiaxes,
+                                        axes_names=DAQ_Move_DCServoTCube._axes_names,
+                                        epsilon=DAQ_Move_DCServoTCube._epsilon)
 
 
     def ini_attributes(self):

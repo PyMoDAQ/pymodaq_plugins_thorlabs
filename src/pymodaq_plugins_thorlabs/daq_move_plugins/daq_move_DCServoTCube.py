@@ -28,11 +28,14 @@ class DAQ_Move_DCServoTCube(DAQ_Move_base):
     _axes_names = ['']
     _epsilon = 0.005
     data_actuator_type = DataActuatorType.DataActuator
-    params = [
-                 {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_tcube_dcservo, 'value': serialnumbers_tcube_dcservo[0]}
+    if serialnumbers_tcube_dcservo == []:
+        logger.warning('No Thorlabs TCube DC Servo found! Check the connection')
+    else:
+        params = [
+                    {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
+                    'limits': serialnumbers_tcube_dcservo, 'value': serialnumbers_tcube_dcservo[0]}
 
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+                ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: DCServoTCube = None
