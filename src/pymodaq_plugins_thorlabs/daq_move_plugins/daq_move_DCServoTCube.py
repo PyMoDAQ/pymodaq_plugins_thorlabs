@@ -10,14 +10,6 @@ from pymodaq.utils.logger import set_logger, get_module_name
 logger = set_logger(get_module_name(__file__))
 
 
-# Helper function to get first element of a list
-def _first(lst):
-    try:
-        return lst[0]
-    except IndexError:
-        return None
-    
-
 class DAQ_Move_DCServoTCube(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
 
@@ -38,7 +30,7 @@ class DAQ_Move_DCServoTCube(DAQ_Move_base):
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_tcube_dcservo, 'value': _first(serialnumbers_tcube_dcservo)}
+                  'limits': serialnumbers_tcube_dcservo, 'value': serialnumbers_tcube_dcservo[0]}
 
              ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
 

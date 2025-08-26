@@ -1,7 +1,7 @@
 from pymodaq.control_modules.move_utility_classes import (
     DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator)
 
-from pymodaq_plugins_thorlabs.daq_move_plugins.daq_move_DCServoTCube import DAQ_Move_DCServoTCube, _first
+from pymodaq_plugins_thorlabs.daq_move_plugins.daq_move_DCServoTCube import DAQ_Move_DCServoTCube
 from pymodaq_plugins_thorlabs.hardware.kinesis import DCServoKCube, serialnumbers_kcube_dcservo
 
 from pymodaq.utils.logger import set_logger, get_module_name
@@ -22,7 +22,7 @@ class DAQ_Move_DCServoKCube(DAQ_Move_DCServoTCube):
     _controller_units = DCServoKCube.default_units
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kcube_dcservo, 'value': _first(serialnumbers_kcube_dcservo)}
+                  'limits': serialnumbers_kcube_dcservo, 'value': serialnumbers_kcube_dcservo[0]}
 
              ] + comon_parameters_fun(DAQ_Move_DCServoTCube.is_multiaxes,
                                       axes_names=DAQ_Move_DCServoTCube._axes_names,
