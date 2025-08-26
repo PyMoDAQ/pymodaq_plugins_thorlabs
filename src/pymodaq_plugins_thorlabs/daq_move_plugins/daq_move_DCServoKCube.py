@@ -12,7 +12,7 @@ logger = set_logger(get_module_name(__file__))
 
 
 class DAQ_Move_DCServoKCube(DAQ_Move_DCServoCube_Abstract):
-    """ Instrument plugin class for Thorlabs DC Servo TCube.
+    """ Instrument plugin class for Thorlabs DC Servo KCube.
 
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
