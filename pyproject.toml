@@ -18,7 +18,7 @@ dependencies = [
     "nicelib",
     "instrumental-lib",
     "pylablib==1.4.1",
-    'pymodaq>=4.4.0',
+    'pymodaq>=5.0.0',
     'opencv-python',
     'elliptec',
     'pymodaq_utils',
