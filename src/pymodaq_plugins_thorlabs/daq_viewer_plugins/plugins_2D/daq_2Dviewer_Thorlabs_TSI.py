@@ -1,8 +1,12 @@
 import cv2
-from pymodaq.utils.daq_utils import ThreadCommand
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
 from pymodaq.utils.data import DataFromPlugins, Axis
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
-from pymodaq.utils.parameter import Parameter
+
 
 from pylablib.devices import Thorlabs
 from qtpy import QtWidgets, QtCore
