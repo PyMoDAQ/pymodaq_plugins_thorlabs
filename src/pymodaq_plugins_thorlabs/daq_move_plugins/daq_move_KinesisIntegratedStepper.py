@@ -1,5 +1,7 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
-from pymodaq.utils.logger import set_logger, get_module_name
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
 
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_integrated_stepper, IntegratedStepper
 

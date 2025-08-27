@@ -1,7 +1,12 @@
 import sys
 from qtpy.QtCore import QThread
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
 from easydict import EasyDict as edict
-from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.daq_utils import getLineInfo
 from pymodaq.utils.data import DataFromPlugins
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base
 from collections import OrderedDict
