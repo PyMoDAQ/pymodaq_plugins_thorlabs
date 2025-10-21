@@ -244,7 +244,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
             # Warning, acquisition_in_progress returns 1,0 and not a real bool
             if not self.controller.acquisition_in_progress():
                 self.controller.clear_acquisition()
-                self.controller.start_acquisition()
+                self.controller.start_acquisition(nframes=10)
             #Then start the acquisition
             self.callback_signal.emit()  # will trigger the wait for acquisition
 
@@ -351,4 +351,4 @@ class ThorlabsCallback(QtCore.QObject):
 
 
 if __name__ == '__main__':
-    main(__file__, init=False)
+    main(__file__, init=True)
