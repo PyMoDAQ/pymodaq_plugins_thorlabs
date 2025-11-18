@@ -89,7 +89,7 @@ class DAQ_2DViewer_Thorlabs_DCx(DAQ_Viewer_base):
         try:
             self.status.update(edict(initialized=False, info="", x_axis=None,
                                      y_axis=None, controller=None))
-            if self.settings.child('controller_status').value() == "Slave":
+            if not self.is_master:
                 if controller is None:
                     raise Exception('no controller has been defined externally while'
                                     'this detector is a slave one')

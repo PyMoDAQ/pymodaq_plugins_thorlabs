@@ -39,10 +39,11 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
     def ini_stage(self, controller=None):
         """
         """
-        self.controller = self.ini_stage_init(controller, IntegratedStepper())
-
-        if self.settings['multiaxes', 'multi_status'] == "Master":
+        if self.is_master:
+            self.controller = IntegratedStepper()
             self.controller.connect(self.settings['serial_number'])
+        else:
+            self.controller = controller
 
         info = self.controller.name
         self.settings.child('controller_id').setValue(info)
