@@ -9,6 +9,15 @@ from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, como
 
 
 from pylablib.devices import Thorlabs
+""" note:
+If the package is not working, this may be due to the use by pylablib of the ftd2xx.dll from ftdi (converting usb to 
+COM port) through the kind of deprecated https://github.com/ftd2xx/ftd2xx package. Anyway, this one cannot (in some
+unknown circumstances) load the ftd2xx.dll from its location (could be 
+C:/Windows/System32/DriverStore/FileRepository/ftdibus.inf_amd64_6d7e924c4fdd3111/amd64) Then take it and place it in 
+C:/Windows/System32/ eventually renaming it as ftd2xx.dll (if it was the ftd2xx64.dll as you may be running on AMD64)
+That should solve this particular issue encountered on some win10 computers
+"""
+
 from qtpy import QtWidgets, QtCore
 import numpy as np
 from time import perf_counter
