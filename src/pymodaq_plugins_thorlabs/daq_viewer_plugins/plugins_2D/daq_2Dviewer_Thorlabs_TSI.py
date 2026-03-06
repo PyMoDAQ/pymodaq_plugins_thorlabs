@@ -3,6 +3,10 @@ import cv2
 from pymodaq_utils.logger import set_logger, get_module_name
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq_gui.parameter import Parameter
+try:
+    from pymodaq_gui.plotting.items.roi import RoiInfo  # pymodaq > 5.1.x
+except ImportError:
+    from pymodaq_gui.plotting.utils.plot_utils import RoiInfo
 
 from pymodaq.utils.data import DataFromPlugins, Axis
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
@@ -42,14 +46,16 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     params = comon_parameters + [
         {'title': 'Camera name:', 'name': 'camera_name', 'type': 'str', 'value': '', 'readonly': True},
         {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serialnumbers},
-        #{'title': 'Sensor type:', 'name': 'sensor', 'type': 'str', 'value': '', 'readonly': True},
-        #this will be used once pylablib accepts PR52
         {'title': 'Sensor type:', 'name': 'sensor', 'type': 'list', 'limits': ['Monochrome', 'Bayer']},
         {'title': 'Ouput Color:', 'name': 'output_color', 'type': 'list', 'limits': ['RGB', 'MonoChrome']},
-        {'title': 'Update ROI', 'name': 'update_roi', 'type': 'bool_push', 'value': False},
-        {'title': 'Clear ROI+Bin', 'name': 'clear_roi', 'type': 'bool_push', 'value': False},
-        {'title': 'X binning', 'name': 'x_binning', 'type': 'int', 'value': 1},
-        {'title': 'Y binning', 'name': 'y_binning', 'type': 'int', 'value': 1},
+        {'title': 'ROI', 'name': 'roi', 'type': 'group', 'children':[
+            {'title': 'Update ROI from Viewer', 'name': 'update_roi', 'type': 'led', 'value': False},
+            {'title': 'Apply ROI', 'name': 'apply_roi', 'type': 'led', 'value': False},
+            {'title': 'Clear ROI+Bin', 'name': 'clear_roi', 'type': 'bool_push', 'value': False},
+            {'title': 'ROI:', 'name': 'roi_slices', 'type': 'str', 'value': ''},
+            {'title': 'X binning', 'name': 'x_binning', 'type': 'int', 'value': 1},
+            {'title': 'Y binning', 'name': 'y_binning', 'type': 'int', 'value': 1},
+            ],},
         {'title': 'Image width', 'name': 'hdet', 'type': 'int', 'value': 1, 'readonly': True},
         {'title': 'Image height', 'name': 'vdet', 'type': 'int', 'value': 1, 'readonly': True},
         {'title': 'Timing', 'name': 'timing_opts', 'type': 'group', 'children':
@@ -64,16 +70,69 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     def ini_attributes(self):
         self.controller: Thorlabs.ThorlabsTLCamera = None
 
-        self.x_axis = None
-        self.y_axis = None
+        self.x_axis: Axis = None
+        self.y_axis: Axis = None
+
+        self.roi_select_info: RoiInfo = None
+
         self.last_tick = 0.0  # time counter used to compute FPS
         self.fps = 0.0
 
         self.data_shape: str = ''
         self.callback_thread = None
 
-        # Disable "use ROI" option to avoid confusion with other buttons
-        #self.settings.child('ROIselect', 'use_ROI').setOpts(visible=False)
+    def roi_select(self, roi_info: RoiInfo, ind_viewer: int = 0):
+        """ Automatically called when a user use the RoiSelect ROi from a 2D viewer"""
+        self.roi_select_info = roi_info
+        self.roi_select_viewer_index = ind_viewer
+
+        if self.settings['roi', 'update_roi']:
+            self.settings['roi', 'roi_slices'] = str(roi_info.to_slices())
+            if self.settings['roi', 'apply_roi']:
+                self.apply_roi()
+
+    def apply_roi(self):
+        roi_info = RoiInfo.from_slices(eval(self.settings['roi', 'roi_slices']))
+        new_roi = (roi_info.origin[1], roi_info.size[1], self.settings['roi', 'x_binning'],
+                   roi_info.origin[0], roi_info.size[0], self.settings['roi', 'y_binning'])
+        self.update_rois(new_roi)
+
+    def compute_axes(self):
+        (hstart, hend, vstart, vend, hbin, vbin) = self.controller.get_roi()
+        slices = [slice(vstart, vend, vbin), slice(hstart, hend, hbin)]
+        self.settings.child('roi', 'roi_slices').setValue(str(slices))
+        roi_info = RoiInfo.from_slices(slices)
+
+        self.x_axis = Axis('x_axis', offset=roi_info.origin[1],
+                           scaling=self.settings['roi', 'x_binning'],
+                           size=int(roi_info.size[1]),
+                           index=1)
+        self.y_axis = Axis('y_axis', offset=roi_info.origin[0],
+                           scaling=self.settings['roi', 'y_binning'],
+                           size=int(roi_info.size[0]),
+                           index=0)
+
+    def clear_roi(self):
+        wdet, hdet = self.controller.get_detector_size()
+        self.settings.child('roi', 'x_binning').setValue(1)
+        self.settings.child('roi', 'y_binning').setValue(1)
+
+        new_roi = (0, wdet, 1, 0, hdet, 1)
+        self.update_rois(new_roi)
+
+    def update_rois(self, new_roi):
+        # In pylablib, ROIs compare as tuples
+        (new_x, new_width, new_xbinning, new_y, new_height, new_ybinning) = new_roi
+        if new_roi != self.controller.get_roi():
+            # self.controller.set_attribute_value("ROIs",[new_roi])
+            self.controller.set_roi(hstart=new_x, hend=new_x + new_width, vstart=new_y, vend=new_y + new_height,
+                                    hbin=new_xbinning, vbin=new_ybinning)
+            self.emit_status(ThreadCommand('Update_Status', [f'Changed ROI: {new_roi}']))
+            self.controller.clear_acquisition()
+            self.controller.setup_acquisition()
+            # Finally, prepare view for displaying the new data
+            self._prepare_view()
+            self.compute_axes()
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
@@ -89,46 +148,23 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         if param.name() == "fps_on":
             self.settings.child('timing_opts', 'fps').setOpts(visible=param.value())
 
-        if param.name() == "update_roi":
+        if param.name() == "apply_roi":
             if param.value():   # Switching on ROI
-
-                # We handle ROI and binning separately for clarity
-                (old_x, _, old_y, _, xbin, ybin) = self.controller.get_roi() # Get current binning
-
-                # Values need to be rescaled by binning factor and shifted by current x0,y0 to be correct.
-                new_x = (old_x + self.settings.child('ROIselect', 'x0').value())*xbin
-                new_y = (old_y + self.settings.child('ROIselect', 'y0').value())*xbin
-                new_width = self.settings.child('ROIselect', 'width').value()*ybin
-                new_height = self.settings.child('ROIselect', 'height').value()*ybin
-
-                new_roi = (new_x, new_width, xbin, new_y, new_height, ybin)
-                self.update_rois(new_roi)
-                # recenter rectangle
-                self.settings.child('ROIselect', 'x0').setValue(0)
-                self.settings.child('ROIselect', 'y0').setValue(0)
-                param.setValue(False)
+                self.apply_roi()
+            else:
+                self.clear_roi()
 
         if param.name() in ['x_binning', 'y_binning']:
             # We handle ROI and binning separately for clarity
             (x0, w, y0, h, *_) = self.controller.get_roi()  # Get current ROI
-            xbin = self.settings.child('x_binning').value()
-            ybin = self.settings.child('y_binning').value()
+            xbin = self.settings['roi', 'x_binning']
+            ybin = self.settings['roi', 'y_binning']
             new_roi = (x0, w, xbin, y0, h, ybin)
             self.update_rois(new_roi)
 
         if param.name() == "clear_roi":
             if param.value():   # Switching on ROI
-                wdet, hdet = self.controller.get_detector_size()
-                # self.settings.child('ROIselect', 'x0').setValue(0)
-                # self.settings.child('ROIselect', 'width').setValue(wdet)
-                self.settings.child('x_binning').setValue(1)
-                #
-                # self.settings.child('ROIselect', 'y0').setValue(0)
-                # new_height = self.settings.child('ROIselect', 'height').setValue(hdet)
-                self.settings.child('y_binning').setValue(1)
-
-                new_roi = (0, wdet, 1, 0, hdet, 1)
-                self.update_rois(new_roi)
+                self.clear_roi()
                 param.setValue(False)
 
     def ini_detector(self, controller=None):
@@ -158,27 +194,29 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
         # Get camera name
         self.settings.child('camera_name').setValue(device_info.name)
 
-        # this will be used once pylablib accepts PR52
-        # # Get Sensor Type
-        # self.settings.child('sensor').setValue(device_info.sensor_type)
-
         if 'monochrome' in self.settings['sensor'].lower():
             self.settings.child('output_color').setValue('MonoChrome')
             self.settings.child('output_color').setOpts(visible=False)
 
         # Set exposure time
-        self.controller.set_exposure(self.settings.child('timing_opts', 'exposure_time').value()/1000)
+        self.controller.set_exposure(self.settings['timing_opts', 'exposure_time']/1000)
 
         # FPS visibility
-        self.settings.child('timing_opts', 'fps').setOpts(visible=self.settings.child('timing_opts', 'fps_on').value())
+        self.settings.child('timing_opts', 'fps').setOpts(visible=self.settings['timing_opts', 'fps_on'])
+
+        # get roi limits
+        self.controller.get_roi_limits()
 
         # Update image parameters
-        (*_, hbin, vbin) = self.controller.get_roi()
+        (hstart, hend, vstart, vend, hbin, vbin) = self.controller.get_roi()
         height, width = self.controller.get_data_dimensions()
-        self.settings.child('x_binning').setValue(hbin)
-        self.settings.child('y_binning').setValue(vbin)
+        self.settings.child('roi', 'x_binning').setValue(hbin)
+        self.settings.child('roi', 'y_binning').setValue(vbin)
         self.settings.child('hdet').setValue(width)
         self.settings.child('vdet').setValue(height)
+        slices = [slice(vstart, vend, vbin), slice(hstart, hend, hbin)]
+        self.settings.child('roi', 'roi_slices').setValue(str(slices))
+        self.compute_axes()
 
         # Way to define a wait function with arguments
         wait_func = lambda: self.controller.wait_for_frame(since='lastread', nframes=1, timeout=20.0)
@@ -202,13 +240,7 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
     def _prepare_view(self):
         """Preparing a data viewer by emitting temporary data. Typically, needs to be called whenever the
         ROIs are changed"""
-        # wx = self.settings.child('rois', 'width').value()
-        # wy = self.settings.child('rois', 'height').value()
-        # bx = self.settings.child('rois', 'x_binning').value()
-        # by = self.settings.child('rois', 'y_binning').value()
-        #
-        # sizex = wx // bx
-        # sizey = wy // by
+
         height, width = self.controller.get_data_dimensions()
 
         self.settings.child('hdet').setValue(width)
@@ -228,19 +260,6 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
                                                                dim=self.data_shape,
                                                                labels=[f'ThorCam_{self.data_shape}'])])
             QtWidgets.QApplication.processEvents()
-
-    def update_rois(self, new_roi):
-        # In pylablib, ROIs compare as tuples
-        (new_x, new_width, new_xbinning, new_y, new_height, new_ybinning) = new_roi
-        if new_roi != self.controller.get_roi():
-            # self.controller.set_attribute_value("ROIs",[new_roi])
-            self.controller.set_roi(hstart=new_x, hend=new_x + new_width, vstart=new_y, vend=new_y + new_height,
-                                    hbin=new_xbinning, vbin=new_ybinning)
-            self.emit_status(ThreadCommand('Update_Status', [f'Changed ROI: {new_roi}']))
-            self.controller.clear_acquisition()
-            self.controller.setup_acquisition()
-            # Finally, prepare view for displaying the new data
-            self._prepare_view()
 
     def grab_data(self, Naverage=1, **kwargs):
         """
@@ -279,24 +298,18 @@ class DAQ_2DViewer_Thorlabs_TSI(DAQ_Viewer_base):
             if frame is not None:       # happens for last frame when stopping camera
                 if self.settings['output_color'] == 'RGB':
                     rgb_image = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2RGB)
-                    self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
-                                                                  data=[np.squeeze(rgb_image[..., ind]) for ind in
-                                                                        range(3)],
-                                                                  dim=self.data_shape,
-                                                                  labels=[f'ThorCam_{self.data_shape}'])])
+                    data_arrays = [np.atleast_1d(rgb_image[..., ind]) for ind in range(3)]
                 else:
                     if 'monochrome' in self.settings['sensor'].lower():
-                        self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
-                                                                      data=[np.squeeze(frame)],
-                                                                      dim=self.data_shape,
-                                                                      labels=[f'ThorCam_{self.data_shape}'])])
+                        data_arrays = [np.atleast_1d(frame)]
                     else:
-                        grey_image = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2GRAY)
-                        self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
-                                                                      data=[np.squeeze(grey_image)],
-                                                                      dim=self.data_shape,
-                                                                      labels=[f'ThorCam_{self.data_shape}'])])
+                        data_arrays = [np.atleast_1d(cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2GRAY))]
 
+                self.data_grabed_signal.emit([DataFromPlugins(name='Thorlabs Camera',
+                                                              data=data_arrays,
+                                                              dim=self.data_shape,
+                                                              labels=[f'ThorCam_{self.data_shape}'],
+                                                              axes=[self.x_axis, self.y_axis])])
             if self.settings.child('timing_opts', 'fps_on').value():
                 self.update_fps()
 
