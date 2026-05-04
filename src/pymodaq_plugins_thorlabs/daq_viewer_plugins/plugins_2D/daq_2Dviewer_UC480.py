@@ -1,21 +1,12 @@
+
 from pymodaq.control_modules.viewer_utility_classes import comon_parameters, main
 
-from pylablib.devices import Thorlabs
+from pylablib.devices import uc480
 
 from pymodaq_plugins_thorlabs.hardware.camera_base import CameraBase, cam_params
 
 
-""" note:
-If the package is not working, this may be due to the use by pylablib of the ftd2xx.dll from ftdi (converting usb to 
-COM port) through the kind of deprecated https://github.com/ftd2xx/ftd2xx package. Anyway, this one cannot (in some
-unknown circumstances) load the ftd2xx.dll from its location (could be 
-C:/Windows/System32/DriverStore/FileRepository/ftdibus.inf_amd64_6d7e924c4fdd3111/amd64) Then take it and place it in 
-C:/Windows/System32/ eventually renaming it as ftd2xx.dll (if it was the ftd2xx64.dll as you may be running on AMD64)
-That should solve this particular issue encountered on some win10 computers
-"""
-
-
-class DAQ_2DViewer_Thorlabs_TSI(CameraBase):
+class DAQ_2DViewer_UC480(CameraBase):
     """
     Plugin for either Thorlabs cameras uc480type or IDS µeye.
 
@@ -39,23 +30,25 @@ class DAQ_2DViewer_Thorlabs_TSI(CameraBase):
 
     The "Clear ROI+Bin" button resets to default cameras parameters: no binning and full frame.
     """
-    serial_numbers = Thorlabs.list_cameras_tlcam()
+    serial_numbers = [cam_info.serial_number for cam_info in uc480.list_cameras()]
     serial_params = [{'title': 'Serial number:', 'name': 'serial_number', 'type': 'list', 'limits': serial_numbers}]
+
     params = comon_parameters + serial_params + cam_params
 
     def ini_attributes(self):
         super().ini_attributes()
-        self.controller: Thorlabs.ThorlabsTLCamera = None
+        self.controller: uc480.UC480Camera = None
 
     def ini_detector_custom(self, controller=None):
         # Initialize camera class
         if not self.settings.child('serial_number').value() == '':
             if self.is_master:
-                self.controller = Thorlabs.ThorlabsTLCamera(self.settings.child('serial_number').value())
+                self.controller = uc480.UC480Camera(
+                    dev_id=uc480.UC480Camera.find_by_serial(self.settings.child('serial_number').value()))
             else:
                 self.controller = controller
         else:
-            raise Exception('No compatible Thorlabs TSI camera was found.')
+            raise Exception('No compatible Thorlabs UC480 camera was found.')
 
 
 if __name__ == '__main__':

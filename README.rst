@@ -59,8 +59,9 @@ Viewer1D
 Viewer2D
 ++++++++
 
-* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M.
+* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M. (Deprecated use UC480 below)
 * **Thorlabs_TSI**: sCMOS camera series Zelux, Kiralux, Quantalux.
+* **UC480**: Interface for simple camera of the thorlabs uc480 series or IDS µeye
 
 Installation instructions
 =========================
