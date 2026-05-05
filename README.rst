@@ -43,8 +43,10 @@ Actuators
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) using the pylablib control module. The Thorlabs APT software should be installed: https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9019.
 * **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 * **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
+* **Kinesis_KIM101**: Four Channel Piezo Inertia Motion Kinesis series (KIM101)
 * **DCServoTCube**: DC Servo motors controlled using a TCube (tested with TDC001 and MTS50 motor)
 * **DCServoKCube**: DC Servo motors controlled using a KCube (tested with KDC101)
+
 
 Viewer0D
 ++++++++
