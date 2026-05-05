@@ -1,5 +1,7 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
-from pymodaq.utils.logger import set_logger, get_module_name
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
 
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_integrated_stepper, IntegratedStepper
 
@@ -16,13 +18,13 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
 
     is_multiaxes = False
 
-    stage_names = []
+    stage_names = ['']
 
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_integrated_stepper},
               {'title': 'Backlash:', 'name': 'backlash', 'type': 'float', 'value': 0, },
-              ] + comon_parameters_fun(is_multiaxes, epsilon=_epsilon)
+              ] + comon_parameters_fun(is_multiaxes, axis_names=stage_names, epsilon=_epsilon)
 
     def ini_attributes(self):
         self.controller: IntegratedStepper = None
@@ -37,10 +39,11 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
     def ini_stage(self, controller=None):
         """
         """
-        self.controller = self.ini_stage_init(controller, IntegratedStepper())
-
-        if self.settings['multiaxes', 'multi_status'] == "Master":
+        if self.is_master:
+            self.controller = IntegratedStepper()
             self.controller.connect(self.settings['serial_number'])
+        else:
+            self.controller = controller
 
         info = self.controller.name
         self.settings.child('controller_id').setValue(info)

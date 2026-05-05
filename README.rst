@@ -27,6 +27,7 @@ Authors
 * Amelie DeShazer (adeshazer@wisc.edu)
 * Astha Khandelwal (asthak@iisc.ac.in)
 * Daichi Kozawa (kozawa.daichi@nims.go.jp)
+* Arnaud Meyer (arnaud.meyer@univ-st-etienne.fr)
 
 Instruments
 ===========
@@ -43,6 +44,9 @@ Actuators
 * **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 * **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
 * **Kinesis_KDC101**: DC Servo Motor Kinesis series (KDC101)
+* **Kinesis_KIM101**: Four Channel Piezo Inertia Motion Kinesis series (KIM101)
+* **DCServoTCube**: DC Servo motors controlled using a TCube (tested with TDC001 and MTS50 motor)
+* **DCServoKCube**: DC Servo motors controlled using a KCube (tested with KDC101)
 
 
 Viewer0D
@@ -58,8 +62,9 @@ Viewer1D
 Viewer2D
 ++++++++
 
-* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M.
+* **Thorlabs_DCx**: Thorlabs CCD camera. Tested with DCC3240M. (Deprecated use UC480 below)
 * **Thorlabs_TSI**: sCMOS camera series Zelux, Kiralux, Quantalux.
+* **UC480**: Interface for simple camera of the thorlabs uc480 series or IDS µeye
 
 Installation instructions
 =========================

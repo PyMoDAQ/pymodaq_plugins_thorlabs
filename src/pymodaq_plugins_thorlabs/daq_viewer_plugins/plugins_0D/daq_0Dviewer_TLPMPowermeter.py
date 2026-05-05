@@ -17,7 +17,12 @@ This plugin is making use of the TLPM.py script provided by thorlabs. An alterna
 plugin using the Instrumental_lib package directly interfacing the C library with the nice Instrument wrapper
 """
 from easydict import EasyDict as edict
-from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
+from pymodaq.utils.daq_utils import getLineInfo
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
 from pymodaq.utils.data import DataFromPlugins
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, main
 
@@ -57,17 +62,14 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
         self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
         try:
 
-            if self.settings.child(('controller_status')).value() == "Slave":
-                if controller is None:
-                    raise Exception('no controller has been defined externally while this detector is a slave one')
-                else:
-                    self.controller = controller
-            else:
+            if self.is_master:
                 index = DEVICE_NAMES.index(self.settings['devices'])
                 self.controller = CustomTLPM()
                 info = self.controller.infos.get_devices_info(index)
                 self.controller.open_by_index(index)
                 self.settings.child('info').setValue(str(info))
+            else:
+                self.controller = controller
 
             self.settings.child('wavelength').setOpts(limits=self.controller.wavelength_range)
             self.controller.wavelength = self.settings.child('wavelength').value()

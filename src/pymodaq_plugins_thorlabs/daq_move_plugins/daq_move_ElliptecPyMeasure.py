@@ -11,8 +11,9 @@ from pymeasure.instruments.thorlabs import thorlabs_elliptec as elliptec
 from pymeasure.instruments.thorlabs.elliptec_utils.base import scan_for_devices
 from pymeasure.instruments.resources import list_resources
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand  # object used to send info back to the main thread
-from pymodaq.utils.parameter import Parameter
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
 
 rm = pyvisa.ResourceManager()
 com_ports = rm.list_resources()
@@ -31,7 +32,7 @@ class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
          hardware library
 
     """
-    _controller_units = ''
+    _controller_units = '°'
 
     is_multiaxes = True
     axes_names = [str(ind) for ind in range(4)]
