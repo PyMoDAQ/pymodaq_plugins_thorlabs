@@ -2,6 +2,7 @@ from pymodaq.control_modules.viewer_utility_classes import comon_parameters, mai
 
 from pylablib.devices import Thorlabs
 
+
 from pymodaq_plugins_thorlabs.hardware.camera_base import CameraBase, cam_params
 
 
