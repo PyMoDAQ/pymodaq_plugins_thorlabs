@@ -17,21 +17,12 @@ That should solve this particular issue encountered on some win10 computers
 
 class DAQ_2DViewer_Thorlabs_TSI(CameraBase):
     """
-    Plugin for either Thorlabs cameras uc480type or IDS µeye.
+    Plugin for TSI SCMOS Thorlabs cameras
 
-    This is the interface used in multiple cameras, including many simple Thorlabs and IDS cameras. It has been tested with IDS SC2592R12M and Thorlabs DCC1545M.
 
-    Essentially identical interface is available under two different implementations:
-    either as Thorlabs uc480 or as IDS uEye. Both of these seem to cover exactly the same cameras,
-    both are freely available from the manufacturers, and both implement exactly the same functionality.
-    However, these interfaces are not interchangeable, and each camera will only interact with one of
-    them depending on which driver it happens to use (usually based on which of the software packages
-    was installed last). Hence, if you have both ThorCam and IDS Software Suite installed, you would
-    need to check both interfaces. Normally, the interface should correspond to the software which can
-    connect to the camera (either ThorCam or uEye Cockpit).
 
     Building on pylablib driver, information about it can be found here:
-    https://pylablib.readthedocs.io/en/latest/devices/uc480.html#cameras-uc480
+    https://pylablib.readthedocs.io/en/latest/devices/
 
     The plugin provides binning functionality as well as ROI (region of interest) selection, which are on handled the hardware side.
     To use ROIs, click on "Show/Hide ROI selection area" in the viewer panel (icon with dashed rectangle).

@@ -10,7 +10,8 @@ class DAQ_2DViewer_UC480(CameraBase):
     """
     Plugin for either Thorlabs cameras uc480type or IDS µeye.
 
-    This is the interface used in multiple cameras, including many simple Thorlabs and IDS cameras. It has been tested with IDS SC2592R12M and Thorlabs DCC1545M.
+    This is the interface used in multiple cameras, including many simple Thorlabs and IDS cameras.
+    It has been tested with IDS SC2592R12M and Thorlabs DCC1545M.
 
     Essentially identical interface is available under two different implementations:
     either as Thorlabs uc480 or as IDS uEye. Both of these seem to cover exactly the same cameras,

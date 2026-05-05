@@ -33,7 +33,12 @@ cam_params = [
         [{'title': 'Exposure Time (ms)', 'name': 'exposure_time', 'type': 'int', 'value': 1},
          {'title': 'Compute FPS', 'name': 'fps_on', 'type': 'bool', 'value': True},
          {'title': 'FPS', 'name': 'fps', 'type': 'float', 'value': 0.0, 'readonly': True}]
-     }
+     },
+    {'title': 'Buffer', 'name': 'buffer', 'type': 'group', 'children': [
+        {'title': 'Size:', 'name': 'size', 'type': 'int', 'value': 10},
+        {'title': 'mode:', 'name': 'mode', 'type': 'list', 'value': 'now',
+         'limits': ['now', 'lastread', 'lastwait', 'start']},
+    ]},
 ]
 
 
@@ -218,8 +223,11 @@ class CameraBase(DAQ_Viewer_base):
 
     def setup_callback_thread(self):
         # Way to define a wait function with arguments
-        wait_func = lambda: self.controller.wait_for_frame(since='lastread', nframes=1, timeout=20.0)
+        wait_func = lambda: self.controller.wait_for_frame(since=self.settings['buffer', 'mode'],
+                                                           nframes=1, timeout=20.0)
         callback = ThorlabsCallback(wait_func)
+        self.settings.child('buffer', 'mode').setReadonly(True)
+
 
         self.callback_thread = QtCore.QThread()  # creation of a Qt5 thread
         callback.moveToThread(self.callback_thread)  # callback object will live within this thread
@@ -271,7 +279,7 @@ class CameraBase(DAQ_Viewer_base):
             else:
                 if not self.controller.acquisition_in_progress():
                     self.controller.clear_acquisition()
-                    self.controller.start_acquisition(nframes=10)
+                    self.controller.start_acquisition(nframes=self.settings['buffer', 'size'])
                 #Then start the acquisition
                 self.callback_signal.emit(True)  # will trigger the wait for acquisition
 
@@ -344,15 +352,12 @@ class CameraBase(DAQ_Viewer_base):
         # Terminate the communication
 
         self.stop()
-
-        self.callback_thread.quit()
-        self.callback_thread.wait()
+        if self.callback_thread is not None:
+            self.callback_thread.quit()
+            self.callback_thread.wait()
 
         self.controller.close()
-        self.controller = None  # Garbage collect the controller
-        self.status.initialized = False
-        self.status.controller = None
-        self.status.info = ""
+        self.settings.child('buffer', 'mode').setReadonly(False)
 
     def stop(self):
         """Stop the acquisition."""
