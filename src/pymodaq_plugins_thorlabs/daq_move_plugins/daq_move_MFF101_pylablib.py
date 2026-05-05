@@ -1,6 +1,11 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base
 from pymodaq.control_modules.move_utility_classes import comon_parameters
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
+
 from easydict import EasyDict as edict
 
 import pylablib.devices.Thorlabs as Thorlabs
@@ -94,7 +99,7 @@ class DAQ_Move_MFF101_pylablib(DAQ_Move_base):
             #check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
 
             # if multiaxes then init the controller here if Master state otherwise use external controller
-            if self.settings.child('multiaxes','ismultiaxes').value() and self.settings.child('multiaxes','multi_status').value()=="Slave":
+            if not self.is_master:
                 if controller is None: 
                     raise Exception('no controller has been defined externally while this axe is a slave one')
                 else:
@@ -127,8 +132,8 @@ class DAQ_Move_MFF101_pylablib(DAQ_Move_base):
             return self.status
         #This is in case something fails
         except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
-            self.status.info=getLineInfo()+ str(e)
+            self.emit_status(ThreadCommand('Update_Status',[str(e),'log']))
+            self.status.info=str(e)
             self.status.initialized=False
             return self.status
 

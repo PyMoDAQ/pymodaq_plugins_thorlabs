@@ -1,8 +1,13 @@
 import numpy as np
-from pymodaq.utils.daq_utils import ThreadCommand
+
 from pymodaq.utils.data import DataFromPlugins, Axis, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
-from pymodaq.utils.parameter import Parameter
+
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
 from pymodaq_plugins_thorlabs.hardware.ccsxxx import CCSXXX
 
 class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):

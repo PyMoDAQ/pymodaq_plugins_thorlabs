@@ -1,9 +1,12 @@
 from pymodaq.control_modules.move_utility_classes import (
     DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, DataActuator)
-from pymodaq.utils.daq_utils import ThreadCommand
-from pymodaq.utils.parameter import Parameter
+
+from pymodaq_utils.logger import set_logger, get_module_name
+from pymodaq_utils.utils import ThreadCommand
+from pymodaq_gui.parameter import Parameter
+
 from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_piezo, Piezo
-from pymodaq.utils.logger import set_logger, get_module_name
+
 
 logger = set_logger(get_module_name(__file__))
 
