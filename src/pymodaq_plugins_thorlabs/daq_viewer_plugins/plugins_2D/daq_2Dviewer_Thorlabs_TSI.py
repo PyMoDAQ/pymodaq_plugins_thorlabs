@@ -3,7 +3,7 @@ from pymodaq.control_modules.viewer_utility_classes import comon_parameters, mai
 from pylablib.devices import Thorlabs
 
 
-from pymodaq_plugins_thorlabs.hardware.camera_base import CameraBase, cam_params
+from pymodaq_plugins_utils.hardware.camera_base_pylablib import CameraBasePyLabLib, cam_params
 
 
 """ note:
@@ -16,7 +16,7 @@ That should solve this particular issue encountered on some win10 computers
 """
 
 
-class DAQ_2DViewer_Thorlabs_TSI(CameraBase):
+class DAQ_2DViewer_Thorlabs_TSI(CameraBasePyLabLib):
     """
     Plugin for TSI SCMOS Thorlabs cameras
 
