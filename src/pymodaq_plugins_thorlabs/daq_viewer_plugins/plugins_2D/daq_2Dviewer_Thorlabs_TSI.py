@@ -41,9 +41,9 @@ class DAQ_2DViewer_Thorlabs_TSI(CameraBasePyLabLib):
 
     def ini_detector_custom(self, controller=None):
         # Initialize camera class
-        if not self.settings.child('serial_number').value() == '':
+        if self.settings['serial_number'] != '':
             if self.is_master:
-                self.controller = Thorlabs.ThorlabsTLCamera(self.settings.child('serial_number').value())
+                self.controller = Thorlabs.ThorlabsTLCamera(self.settings['serial_number'])
             else:
                 self.controller = controller
         else:

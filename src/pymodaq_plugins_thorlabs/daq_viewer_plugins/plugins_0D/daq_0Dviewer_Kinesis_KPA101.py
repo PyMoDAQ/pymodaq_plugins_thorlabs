@@ -27,7 +27,7 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
         *settings*
         ==================== ========================
     """
-    ##checking VISA ressources
+    ##checking VISA resources
 
     _controller_units = 'V'
     kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'

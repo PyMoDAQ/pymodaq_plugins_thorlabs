@@ -3,6 +3,7 @@ from pymodaq_utils.logger import set_logger  # to be imported by other modules.
 from pymodaq_utils.utils import get_version, PackageNotFoundError
 
 from .utils import Config
+
 config = Config()
 
 try:
