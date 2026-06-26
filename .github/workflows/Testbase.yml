@@ -18,7 +18,7 @@ jobs:
       QT_DEBUG_PLUGINS: 1
     steps:
       - name: Set up Python ${{ inputs.python }}
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Install dependencies
         uses: actions/setup-python@v6.2.0
         with:
