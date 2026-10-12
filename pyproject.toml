@@ -14,7 +14,7 @@ description = 'Set of PyMoDAQ plugins for instruments from Thorlabs (Kinesis K10
 
 dependencies = [
     "pythonnet",
-    "pywin32",
+    "pywin32; sys_platform == 'win32'",
     "pylablib",
     'pymodaq>=5.1.10',
     'opencv-python',
