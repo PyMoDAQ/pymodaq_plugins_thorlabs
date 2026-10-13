@@ -29,7 +29,7 @@ except ImportError as e:
 class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
     """ Plugin for the Elliptec Piezo driven motors from thorlabs based on a pymeasure implementation => not yet published
     """
-    _controller_units = '°'
+    _controller_units = 'degree'
 
     is_multiaxes = True
     _axis_names = [str(ind) for ind in range(4)]

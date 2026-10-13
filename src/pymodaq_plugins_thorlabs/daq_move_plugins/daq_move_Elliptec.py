@@ -30,7 +30,7 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
          hardware library
 
     """
-    _controller_units = '°'
+    _controller_units = 'degree'
     is_multiaxes = True
     _axis_names = ['0']
     _epsilons = 0.1

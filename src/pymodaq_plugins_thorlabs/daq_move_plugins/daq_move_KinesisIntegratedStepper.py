@@ -16,7 +16,7 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
     """
     supported_platforms = ('win32',)  # a Windows driver
 
-    _controller_units = '°'
+    _controller_units = 'degree'
     _epsilons = 0.05
 
     is_multiaxes = False
