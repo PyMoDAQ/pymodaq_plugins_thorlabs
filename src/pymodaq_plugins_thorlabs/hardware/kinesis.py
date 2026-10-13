@@ -1,6 +1,9 @@
 import clr
 import sys
 from typing import Dict
+import time
+import logging
+logger = logging.getLogger(__name__)
 from time import sleep
 
 from System import Decimal
@@ -21,6 +24,7 @@ clr.AddReference("Thorlabs.MotionControl.GenericMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.FilterFlipperCLI")
 clr.AddReference("Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.PiezoCLI")
+clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI")
 clr.AddReference("Thorlabs.MotionControl.KCube.InertialMotorCLI")
 clr.AddReference("Thorlabs.MotionControl.TCube.DCServoCLI ")
 clr.AddReference("Thorlabs.MotionControl.KCube.DCServoCLI ")
@@ -32,6 +36,7 @@ import Thorlabs.MotionControl.DeviceManagerCLI as Device
 import Thorlabs.MotionControl.GenericMotorCLI as Generic
 import Thorlabs.MotionControl.Benchtop.BrushlessMotorCLI as BrushlessMotorCLI
 import Thorlabs.MotionControl.KCube.PiezoCLI as KCubePiezo
+import Thorlabs.MotionControl.KCube.DCServoCLI as KCube
 import Thorlabs.MotionControl.KCube.InertialMotorCLI as InertialMotor
 import Thorlabs.MotionControl.TCube.DCServoCLI as TCubeDCServo
 import Thorlabs.MotionControl.KCube.DCServoCLI as KCubeDCServo
@@ -39,6 +44,14 @@ import Thorlabs.MotionControl.KCube.DCServoCLI as KCubeDCServo
 
 # First, build device list
 Device.DeviceManagerCLI.BuildDeviceList()
+serialnumbers_integrated_stepper = [str(ser) for ser in
+                                    Device.DeviceManagerCLI.GetDeviceList(Integrated.CageRotator.DevicePrefix)]
+serialnumbers_flipper = [str(ser) for ser in
+                         Device.DeviceManagerCLI.GetDeviceList(FilterFlipper.FilterFlipper.DevicePrefix)]
+serialnumbers_brushless = [str(ser) for ser in
+                           Device.DeviceManagerCLI.GetDeviceList(BrushlessMotorCLI.BenchtopBrushlessMotor.DevicePrefix)]
+serialnumbers_piezo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCubePiezo.KCubePiezo.DevicePrefix)]
+serialnumbers_dcServo = [str(ser) for ser in Device.DeviceManagerCLI.GetDeviceList(KCube.KCubeDCServo.DevicePrefix)]
 
 # Then, get serial numbers for each category
 _sn_list = lambda prefix: [str(sn) for sn in Device.DeviceManagerCLI.GetDeviceList(prefix)]
@@ -338,6 +351,59 @@ class Piezo(Kinesis):
     def stop(self):
         pass
 
+class DCservo(Kinesis):
+    default_units = 'mm'
+    def __init__(self): 
+        self._device: KCube.KCubeDCServo = None
+
+    def connect(self, serial: int):
+        if serial in serialnumbers_dcServo:
+            self._device = KCube.KCubeDCServo.CreateKCubeDCServo(serial)
+            self._device.Connect(serial)
+            time.sleep(0.25)
+            self._device.StartPolling(250)
+            time.sleep(0.25)
+            self._device.EnableDevice()
+            time.sleep(0.25)
+
+            if not self._device.IsSettingsInitialized():
+                self._device.WaitForSettingsInitialized(10000)
+                assert self._device.IsSettingsInitialized() is True
+        
+        servo_config = self._device.LoadMotorConfiguration(serial)
+        logger.info(f"Servo Configuration: {servo_config}")
+
+    def get_position(self): 
+        return Decimal.ToDouble(self._device.get_DevicePosition())
+    
+    def move_abs(self, position: float, callback=None):
+        self._device.MoveTo(Decimal(position), callback)
+        
+    def move_rel(self, position: float, callback=None):
+        self._device.MoveRelative(Generic.MotorDirection.Forward, Decimal(position), callback)
+
+    def home(self, callback=None):
+        self._device.Home(callback)
+
+    def stop(self):
+        self._device.Stop(0)
+
+if __name__ == '__main__':
+    controller = BrushlessDCMotor()
+    controller.connect(serialnumbers_brushless[0])
+    motor = controller.init_channel(1)
+    print(motor.get_units())
+    motor.home()
+    print(f'homing: {motor.is_homing}')
+    print(f'Moving: {motor.is_moving}')
+    print(motor.get_target_position())
+
+    motor.move_abs(87, motor.move_done_callback)
+    print(f'homing: {motor.is_homing}')
+    print(f'Moving: {motor.is_moving}')
+    print(motor.get_target_position())
+
+    controller.close()
 class KIM101(Kinesis): 
     default_units = ' '
 
