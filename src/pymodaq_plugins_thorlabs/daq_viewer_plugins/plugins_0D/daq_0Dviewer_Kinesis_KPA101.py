@@ -15,24 +15,19 @@ import clr
 from pymodaq.control_modules.viewer_utility_classes import comon_parameters
 
 
+
+
 class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
-    """
-        ==================== ========================
-        **Attributes**        **Type**
-        *data_grabed_signal*  instance of Signal
-        *VISA_rm*             ResourceManager
-        *com_ports*           
-        *params*              dictionnary list
-        *keithley*
-        *settings*
-        ==================== ========================
+    """ Plugin controlling the KPA101 Positionaligner detector
+
     """
     ##checking VISA resources
+    supported_platforms = ('win32',)  # a Windows driver
 
     _controller_units = 'V'
-    kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 
     try:
+        kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
         sys.path.append(kinesis_path)
         clr.AddReference("Thorlabs.MotionControl.DeviceManagerCLI")
         clr.AddReference("Thorlabs.MotionControl.KCube.PositionAlignerCLI")
@@ -71,45 +66,32 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
             --------
             daq_utils.ThreadCommand
         """
-        self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
-        try:
 
-            if not self.is_master:
-                if controller is None: 
-                    raise Exception('no controller has been defined externally while this detector is a slave one')
-                else:
-                    self.controller = controller
-            else:
-                self.Device.DeviceManagerCLI.BuildDeviceList()
-                serialnumbers = self.Device.DeviceManagerCLI.GetDeviceList(self.PosAligner.KCubePositionAligner.DevicePrefix)
-                ser_bool = self.settings.child(('serial_number')).value() in serialnumbers
-                if ser_bool:
-                    self.controller = self.PosAligner.KCubePositionAligner.CreateKCubePositionAligner(
-                        self.settings.child(('serial_number')).value())
-                    self.controller.Connect(self.settings.child(('serial_number')).value())
-                    if not self.controller.IsSettingsInitialized():
-                        self.controller.WaitForSettingsInitialized(5000)
-                    self.controller.StartPolling(self.settings.child(('polling_time')).value())
-                    self.emit_status(ThreadCommand('update_main_settings', [['wait_time'],
-                                                            self.settings.child(('polling_time')).value(), 'value']))
-                    QThread.msleep(500)
-                    self.controller.EnableDevice()
-                    QThread.msleep(500)
-                    deviceInfo = self.controller.GetDeviceInfo()
-                    self.settings.child(('device_name')).setValue(deviceInfo.Name)
+        if not self.is_master:
+            self.controller = controller
+        else:
+            self.Device.DeviceManagerCLI.BuildDeviceList()
+            serialnumbers = self.Device.DeviceManagerCLI.GetDeviceList(self.PosAligner.KCubePositionAligner.DevicePrefix)
+            ser_bool = self.settings['serial_number'] in serialnumbers
+            if ser_bool:
+                self.controller = self.PosAligner.KCubePositionAligner.CreateKCubePositionAligner(
+                    self.settings['serial_number'])
+                self.controller.Connect(self.settings['serial_number'])
+                if not self.controller.IsSettingsInitialized():
+                    self.controller.WaitForSettingsInitialized(5000)
+                self.controller.StartPolling(self.settings['polling_time'])
+                self.emit_status(ThreadCommand('update_main_settings', [['wait_time'],
+                                                        self.settings['polling_time'], 'value']))
+                QThread.msleep(500)
+                self.controller.EnableDevice()
+                QThread.msleep(500)
+                deviceInfo = self.controller.GetDeviceInfo()
+                self.settings['device_name'] = deviceInfo.Name
 
-                else:
-                    raise Exception("Not valid serial number")
 
-            self.status.initialized = True
-            self.status.controller = self.controller
-            return self.status
-
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [getLineInfo() + str(e), 'log']))
-            self.status.info = getLineInfo() + str(e)
-            self.status.initialized = False
-            return self.status
+        initialized = True
+        info = 'Device initialized'
+        return info, initialized
 
 
     def commit_settings(self, param):
@@ -158,9 +140,10 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
         """
             close the current instance of Keithley viewer.
         """
-        self.controller.DisableDevice()
-        self.controller.StopPolling()
-        self.controller.Disconnect(False)
+        if self.controller is not None:
+            self.controller.DisableDevice()
+            self.controller.StopPolling()
+            self.controller.Disconnect(False)
 
     def grab_data(self, Naverage=1, **kwargs):
         """
@@ -187,3 +170,7 @@ class DAQ_0DViewer_Kinesis_KPA101(DAQ_Viewer_base):
             not implemented?
         """
         return ""
+
+
+if __name__ == '__main__':
+    main(__file__, init=False)

@@ -24,22 +24,22 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
          hardware library.
 
     """
+    supported_platforms = ('win32',)  # a Windows driver
+
     _controller_units = Piezo.default_units
     is_multiaxes = False
-    _axes_names = {'1': 1}
-    _epsilon = 0.01
+    _axis_names = {'1': 1}
+    _epsilons = 0.01
     data_actuator_type = DataActuatorType.DataActuator
-    params = [
-                 {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]},
-                  {'title': 'Units:', 'name': 'units', 'type': 'string', 'value': _controller_units}
-
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+    params = [{'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
+               'limits': serialnumbers_piezo, 'value': serialnumbers_piezo[0]
+                 if len(serialnumbers_piezo) > 0 else None},
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
     def ini_attributes(self):
         self.controller: Piezo = None
 
-    def get_actuator_value(self):
+    def get_actuator_value(self) -> DataActuator:
         """Get the current value from the hardware with scaling conversion.
 
         Returns
@@ -90,7 +90,7 @@ class DAQ_Move_KPZ101(DAQ_Move_base):
         else:
             self.controller = controller
 
-        self.axis_unit = self._controller_units
+        self.axis_unit = self.controller.get_units()
 
         info = "KIM101 Initialized"
         initialized = True

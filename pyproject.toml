@@ -27,11 +27,9 @@ dependencies = [
 
 authors = [
     {name = "Sébastien Weber", email = "sebastien.weber@cemes.fr"},
-    #todo: list here all authors of your plugin
 ]
 maintainers = [
     {name = "Sébastien Weber", email = "sebastien.weber@cemes.fr"},
-    #todo: list here all maintainers of your plugin
 ]
 
 # nottodo: leave everything below as is!

@@ -9,6 +9,10 @@ from System import UInt64
 from System import UInt32
 import logging
 
+if sys.platform != 'win32':
+    raise OSError('This script only works on Windows')
+
+
 kinesis_path = 'C:\\Program Files\\Thorlabs\\Kinesis'
 sys.path.append(kinesis_path)
 
@@ -128,7 +132,7 @@ class Kinesis:
         return self._device.Status.IsHoming
 
     def get_position(self, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError  # noqa: PMQ202  this is base class method that should be reimplemented
 
     def get_target_position(self, *args, **kwargs) -> float:
         return Decimal.ToDouble(self._device.Position)

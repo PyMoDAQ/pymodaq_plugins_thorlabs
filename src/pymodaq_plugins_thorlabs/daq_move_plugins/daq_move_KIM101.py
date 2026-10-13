@@ -6,28 +6,22 @@ from pymodaq_plugins_thorlabs.hardware.kinesis import serialnumbers_inertial_mot
 from pymodaq.utils.logger import set_logger, get_module_name
 
 class DAQ_Move_KIM101(DAQ_Move_base):
-    """ Instrument plugin class for an actuator.
-
-    This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
-    DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
-
-    Attributes:
-    -----------
-    controller: object
-        The particular object that allow the communication with the hardware, in general a python wrapper around the
-         hardware library.
+    """ Four Channel Piezo Inertia Motion Kinesis series
 
     """
+    supported_platforms = ('win32',)  # a Windows driver
+
     _controller_units = KIM101.default_units
     is_multiaxes = True
-    _axes_names = {'1': 1, '2': 2, '3': 3, '4': 4}
-    _epsilon = 0.01
+    _axis_names = {'1': 1, '2': 2, '3': 3, '4': 4}
+    _epsilons = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0]},
+                  'limits': serialnumbers_inertial_motor, 'value': serialnumbers_inertial_motor[0] if
+                 len(serialnumbers_inertial_motor)> 0 else None},
 
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
     def ini_attributes(self):
         self.controller: KIM101 = None
@@ -107,8 +101,8 @@ class DAQ_Move_KIM101(DAQ_Move_base):
         ----------
         value: (float) value of the relative target positioning
         """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
 
         self.controller.move_rel(int(value.value()), self.axis_value)

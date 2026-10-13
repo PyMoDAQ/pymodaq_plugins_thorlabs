@@ -1,4 +1,5 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, comon_parameters_fun
+from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, main, comon_parameters_fun, DataActuatorType,
+                                                          DataActuator)
 from pymodaq_utils.logger import set_logger, get_module_name
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq_gui.parameter import Parameter
@@ -13,18 +14,21 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
     """
 
     """
+    supported_platforms = ('win32',)  # a Windows driver
+
     _controller_units = '°'
-    _epsilon = 0.05
+    _epsilons = 0.05
 
     is_multiaxes = False
 
-    stage_names = ['']
+    _axis_names = ['']
 
     params = [{'title': 'Controller ID:', 'name': 'controller_id', 'type': 'str', 'value': '', 'readonly': True},
               {'title': 'Serial number:', 'name': 'serial_number', 'type': 'list',
                'limits': serialnumbers_integrated_stepper},
               {'title': 'Backlash:', 'name': 'backlash', 'type': 'float', 'value': 0, },
-              ] + comon_parameters_fun(is_multiaxes, axis_names=stage_names, epsilon=_epsilon)
+              ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
+    data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: IntegratedStepper = None
@@ -69,7 +73,7 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
         if self.controller is not None:
             self.controller.stop()
 
-    def get_actuator_value(self):
+    def get_actuator_value(self) -> DataActuator:
         """
             Get the current hardware position with scaling conversion of the Kinsesis insrument provided by get_position_with_scaling
 
@@ -78,30 +82,32 @@ class DAQ_Move_KinesisIntegratedStepper(DAQ_Move_base):
             DAQ_Move_base.get_position_with_scaling, daq_utils.ThreadCommand
         """
 
-        pos = self.controller.get_position()
+        pos = DataActuator(self._title,
+                           data=self.controller.get_position(),
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
-    def move_abs(self, position):
+    def move_abs(self, position: DataActuator):
         """
 
 
         """
         position = self.check_bound(position)
-        self.target_position = position
+        self.target_value = position
         position = self.set_position_with_scaling(position)
 
-        self.controller.move_abs(position)
+        self.controller.move_abs(position.value(self.axis_unit))
 
-    def move_rel(self, position):
+    def move_rel(self, position: DataActuator):
         """
 
         """
-        position = self.check_bound(self.current_position + position) - self.current_position
-        self.target_position = position + self.current_position
+        position = self.check_bound(self.current_value + position) - self.current_value
+        self.target_value = position + self.current_value
         position = self.set_position_relative_with_scaling(position)
 
-        self.controller.move_rel(position)
+        self.controller.move_rel(position.value(self.axis_unit))
 
     def move_home(self):
         """

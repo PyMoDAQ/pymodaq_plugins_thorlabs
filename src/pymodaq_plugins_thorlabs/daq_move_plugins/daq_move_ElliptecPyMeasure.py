@@ -7,10 +7,9 @@ Created the 15/06/2023
 from typing import Union, List
 import pyvisa
 
-from pymeasure.instruments.thorlabs import thorlabs_elliptec as elliptec
-from pymeasure.instruments.thorlabs.elliptec_utils.base import scan_for_devices
 from pymeasure.instruments.resources import list_resources
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
+from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun, main,
+    DataActuatorType, DataActuator)  # common set of parameters for all actuators
 from pymodaq_utils.logger import set_logger, get_module_name
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq_gui.parameter import Parameter
@@ -18,42 +17,41 @@ from pymodaq_gui.parameter import Parameter
 rm = pyvisa.ResourceManager()
 com_ports = rm.list_resources()
 
+logger = set_logger(get_module_name(__file__))
+
+try:
+    from pymeasure.instruments.thorlabs import thorlabs_elliptec as elliptec
+    from pymeasure.instruments.thorlabs.elliptec_utils.base import scan_for_devices
+except ImportError as e:
+    logger.warning(str(e))
+
 
 class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
-    """ Plugin for the Elliptec Piezo driven motors from thorlabs
-
-    This object inherits all functionality to communicate with PyMoDAQ Module through inheritance via DAQ_Move_base
-    It then implements the particular communication with the instrument
-
-    Attributes:
-    -----------
-    controller: object
-        The particular object that allow the communication with the hardware, in general a python wrapper around the
-         hardware library
-
+    """ Plugin for the Elliptec Piezo driven motors from thorlabs based on a pymeasure implementation => not yet published
     """
     _controller_units = '°'
 
     is_multiaxes = True
-    axes_names = [str(ind) for ind in range(4)]
-    _epsilon = 0.1
+    _axis_names = [str(ind) for ind in range(4)]
+    _epsilons = 0.1
 
     params = [ {'title': 'COM port', 'name': 'com_port', 'type': 'list', 'limits': com_ports},
                {'title': 'Device', 'name': 'device', 'type': 'str'},
-               ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+               ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
+    data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: elliptec.ElliptecController = None
-        self.devices: List[str] = []
+        self.devices: list[str] = []
 
-    def get_actuator_value(self):
+    def get_actuator_value(self) -> DataActuator:
         """Get the current value from the hardware with scaling conversion.
 
         Returns
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = self.controller.position
+        pos = DataActuator(self._title, data=self.controller.position, units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -69,11 +67,7 @@ class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
-        else:
-            pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -89,22 +83,21 @@ class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-
         self.devices = scan_for_devices(self.settings['com_port'], start_address=0, stop_address=4)
+        if self.is_master:
+            self.controller = elliptec.ElliptecController(self.settings['com_port'])
+        else:
+            self.controller = controller
 
-        self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller=elliptec.ElliptecController(self.settings['com_port']))
-        address = int(self.settings['multiaxes', 'axis'])
-        device = f'Motor:{self.devices[address]["Motor Type"]} / '\
-                 f'serial:{self.devices[address]["Serial No."]}'
+        device = f'Motor:{self.devices[self.axis_index_key]["Motor Type"]} / '\
+                 f'serial:{self.devices[self.axis_index_key]["Serial No."]}'
         self.settings.child('device').setValue(device)
-
 
         info = device
         initialized = True
         return info, initialized
 
-    def move_abs(self, value):
+    def move_abs(self, value: DataActuator):
         """ Move the actuator to the absolute target defined by value
 
         Parameters
@@ -116,24 +109,24 @@ class DAQ_Move_ElliptecPyMeasure(DAQ_Move_base):
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
 
-        self.controller.set_angle(value)  # when writing your own plugin replace this line
+        self.controller.set_angle(value.value(self.axis_unit))
 
-    def move_rel(self, value):
+    def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
 
         Parameters
         ----------
         value: (float) value of the relative target positioning
         """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
 
-        self.controller.shift_angle(value)  # when writing your own plugin replace this line
+        self.controller.shift_angle(value.value(self.axis_unit))
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.home()  # when writing your own plugin replace this line
+        self.controller.home()
         self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def stop_motion(self):

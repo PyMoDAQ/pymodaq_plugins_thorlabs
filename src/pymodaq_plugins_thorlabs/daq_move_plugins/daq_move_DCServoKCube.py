@@ -28,18 +28,18 @@ class DAQ_Move_DCServoKCube(DAQ_Move_DCServoCube_Abstract):
 
     # Controller type
     controller_type = DCServoKCube
-
+    supported_platforms = ('win32',)  # a Windows driver
     # Parameters
     _controller_units = DCServoKCube.default_units
     is_multiaxes = False
-    _axes_names = ['']
-    _epsilon = 0.005
+    _axis_names = ['']
+    _epsilons = 0.005
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_kcube_dcservo, 'value': serialnumbers_kcube_dcservo[0]}
+                  'limits': serialnumbers_kcube_dcservo, 'value': serialnumbers_kcube_dcservo[0] if len(serialnumbers_kcube_dcservo) > 0 else None,}
 
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 
 from pymodaq.utils.data import DataFromPlugins, Axis, DataToExport
@@ -8,21 +9,17 @@ from pymodaq_utils.logger import set_logger, get_module_name
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq_gui.parameter import Parameter
 
-from pymodaq_plugins_thorlabs.hardware.ccsxxx import CCSXXX
+if sys.platform == 'win32':
+    from pymodaq_plugins_thorlabs.hardware.ccsxxx import CCSXXX
+
 
 class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
-    """ Instrument plugin class for a 1D viewer.
-
-    This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Viewer module through inheritance via
-    DAQ_Viewer_base. It makes a bridge between the DAQ_Viewer module and the Python wrapper of a particular instrument.
-
-    Attributes:
-    -----------
-    controller: object
-        The particular object that allow the communication with the hardware, in general a python wrapper around the
-         hardware library.
+    """ Plugin controlling a 1D Thorlabs spectrometer CCS series
 
     """
+
+    supported_platforms = ('win32',)  # a Windows driver
+
     params = comon_parameters + [
         {'title': 'Integration time', 'name': 'integration_time', 'type': 'float', 'value': 100.0e-3}, # in seconds
         {'title': 'Resource name', 'name': 'resource_name', 'type': 'str', 'value': 'USB0::0x1313::0x8087::M00934802::RAW'},
@@ -59,11 +56,11 @@ class DAQ_1DViewer_CCSXXX(DAQ_Viewer_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.ini_detector_init(slave_controller=controller)
-
         if self.is_master:
             self.controller = CCSXXX(self.settings['resource_name'])
             self.controller.connect()
+        else:
+            self.controller = controller
 
         data_x_axis = self.controller.get_wavelength_data()
         self.x_axis = Axis(data=data_x_axis, label='Wavelength', units='nm', index=0)
