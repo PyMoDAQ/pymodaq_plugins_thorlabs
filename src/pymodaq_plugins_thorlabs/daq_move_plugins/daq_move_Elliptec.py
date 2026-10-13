@@ -5,7 +5,8 @@ Created the 15/06/2023
 @author: Sebastien Weber
 """
 
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main  # common set of parameters for all actuators
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, \
+    DataActuatorType  # common set of parameters for all actuators
 from pymodaq_utils.logger import set_logger, get_module_name
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq_gui.parameter import Parameter
@@ -29,16 +30,17 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
          hardware library
 
     """
-    _controller_units = '°'
+    _controller_units = 'degree'
     is_multiaxes = True
-    axes_names = ['0']
-    _epsilon = 0.1
+    _axis_names = ['0']
+    _epsilons = 0.1
 
     params = [ {'title': 'COM port', 'name': 'com_port', 'type': 'list', 'limits': com_ports},
                {'title': 'Serial No.', 'name': 'serial', 'type': 'str'},
                {'title': 'Motor Type', 'name': 'motor', 'type': 'str'},
                {'title': 'Range', 'name': 'range', 'type': 'str'},
-               ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+               ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
+    data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: Rotator = None
@@ -66,11 +68,7 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
-        else:
-            pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -86,24 +84,17 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        serial = Controller(self.settings['com_port'])
-        self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller=Rotator(serial))
+        if self.is_master:
+            serial = Controller(self.settings['com_port'])
+            self.controller = Rotator(serial)
+        else:
+            self.controller = controller
+
         all_info = self.controller.get('info')
         self.settings.child('serial').setValue(all_info['Serial No.'])
         self.settings.child('motor').setValue(all_info['Motor Type'])
         self.settings.child('range').setValue(all_info['Range'])
-        """
-        info = {'Address': addr,
-                'Motor Type': int(msg[3:5], 16),
-                'Serial No.': msg[5:13],
-                'Year': msg[13:17],
-                'Firmware': msg[17:19],
-                'Thread': is_metric(msg[19]),
-                'Hardware': msg[20],
-                'Range': (int(msg[21:25], 16)),
-                'Pulse/Rev': (int(msg[25:], 16))}
-        """
+
         info = str(all_info)
         initialized = True
         return info, initialized
@@ -129,8 +120,8 @@ class DAQ_Move_Elliptec(DAQ_Move_base):
         ----------
         value: (float) value of the relative target positioning
         """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
 
         self.controller.shift_angle(value)  # when writing your own plugin replace this line

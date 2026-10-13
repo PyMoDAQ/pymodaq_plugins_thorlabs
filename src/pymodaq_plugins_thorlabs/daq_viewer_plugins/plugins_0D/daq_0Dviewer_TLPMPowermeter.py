@@ -11,7 +11,7 @@ you have to install the Optical Monitor Software from Thorlabs to obtain the lib
 
 The installation should create (following the manual) an environment variable called either VXIPNPPATH64 or
 VXIPNPPATH depending on your platform (32 or 64 bits) pointing to where the TLPM library is
-(usually C:\Program Files\IVI Foundation\VISA)
+(usually C:\\Program Files\\IVI Foundation\\VISA)
 
 This plugin is making use of the TLPM.py script provided by thorlabs. An alternative is to use the TLPMPowermeterInst
 plugin using the Instrumental_lib package directly interfacing the C library with the nice Instrument wrapper
@@ -32,6 +32,9 @@ from pymodaq_plugins_thorlabs.hardware.powermeter import CustomTLPM, DEVICE_NAME
 
 
 class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
+    """ Plugin of the Thorlabs TLPM Spectrometer"""
+
+    supported_platforms = ('win32',)  # a Windows driver
 
     _controller_units = 'W'
     devices = DEVICE_NAMES
@@ -59,32 +62,24 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
             --------
             daq_utils.ThreadCommand
         """
-        self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
-        try:
+        if self.is_master:
+            index = DEVICE_NAMES.index(self.settings['devices'])
+            self.controller = CustomTLPM()
 
-            if self.is_master:
-                index = DEVICE_NAMES.index(self.settings['devices'])
-                self.controller = CustomTLPM()
-                info = self.controller.infos.get_devices_info(index)
-                self.controller.open_by_index(index)
-                self.settings.child('info').setValue(str(info))
-            else:
-                self.controller = controller
+            self.controller.open_by_index(index)
 
-            self.settings.child('wavelength').setOpts(limits=self.controller.wavelength_range)
-            self.controller.wavelength = self.settings.child('wavelength').value()
-            self.settings.child('wavelength').setValue(self.controller.wavelength)
+        else:
+            self.controller = controller
+        info = self.controller.infos.get_devices_info(index)
+        self.settings.child('info').setValue(str(info))
 
-            self.status.initialized = True
-            self.status.controller = self.controller
-            self.status.info = str(info)
-            return self.status
+        self.settings.child('wavelength').setOpts(limits=self.controller.wavelength_range)
+        self.controller.wavelength = self.settings.child('wavelength').value()
+        self.settings.child('wavelength').setValue(self.controller.wavelength)
 
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [getLineInfo() + str(e), 'log']))
-            self.status.info = getLineInfo() + str(e)
-            self.status.initialized = False
-            return self.status
+        initialized = True
+
+        return str(info), initialized
 
 
     def commit_settings(self, param):
@@ -113,7 +108,8 @@ class DAQ_0DViewer_TLPMPowermeter(DAQ_Viewer_base):
         """
         data = [np.array([self.controller.get_power()])]
         self.data_grabed_signal.emit([DataFromPlugins(name='Powermeter', data=data,
-                                                      dim='Data0D', labels=['Power (W)'],)])
+                                                      dim='Data0D', labels=['Power'],
+                                                      units=self._controller_units)])
 
 
     def stop(self):

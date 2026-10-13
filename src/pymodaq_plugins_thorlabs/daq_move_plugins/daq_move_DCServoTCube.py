@@ -25,6 +25,7 @@ class DAQ_Move_DCServoTCube(DAQ_Move_DCServoCube_Abstract):
          hardware library.
 
     """
+    supported_platforms = ('win32',)  # a Windows driver
 
     # Controller type
     controller_type = DCServoTCube
@@ -32,14 +33,14 @@ class DAQ_Move_DCServoTCube(DAQ_Move_DCServoCube_Abstract):
     # Parameters
     _controller_units = DCServoTCube.default_units
     is_multiaxes = False
-    _axes_names = ['']
-    _epsilon = 0.005
+    _axis_names = ['']
+    _epsilons = 0.005
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_tcube_dcservo, 'value': serialnumbers_tcube_dcservo[0]}
+                  'limits': serialnumbers_tcube_dcservo, 'value': serialnumbers_tcube_dcservo[0] if len(serialnumbers_tcube_dcservo) > 0 else None,}
 
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
 
 if __name__ == '__main__':

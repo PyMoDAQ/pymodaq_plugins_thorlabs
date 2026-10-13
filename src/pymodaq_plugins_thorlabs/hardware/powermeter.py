@@ -23,7 +23,7 @@ Installation:
 * Download the Optical Power Monitor software from thorlabs website:
   https://www.thorlabs.com/software_pages/ViewSoftwarePage.cfm?Code=OPM
 * after installation, the dll driver and TLPM.py wrapper will be installed in the
-  C:\ProgramFiles\IVI Foundation\VISA\Win64\ or  C:\ProgramFiles (x86)\IVI Foundation\VISA\WinNT\
+  C:\\ProgramFiles\\IVI Foundation\\VISA\\Win64\\ or  C:\\ProgramFiles (x86)\\IVI Foundation\\VISA\\WinNT\\
   under the environment variable VXIPNPPATH or VXIPNPPATH64
   >>>import os
   >>>os.environ['VXIPNPPATH']
@@ -39,11 +39,20 @@ import functools
 from pymodaq.utils import daq_utils as utils
 from pymodaq.utils.logger import set_logger, get_module_name
 logger = set_logger(get_module_name(__file__))
-if utils.is_64bits():
-    path_dll = str(Path(os.environ['VXIPNPPATH64']).joinpath('Win64', 'Bin'))
+
+if sys.platform == 'win32':
+    try:
+        if utils.is_64bits():
+            path_dll = str(Path(os.environ['VXIPNPPATH64']).joinpath('Win64', 'Bin'))
+        else:
+            path_dll = str(Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'Bin'))
+        os.add_dll_directory(path_dll)
+    except KeyError as e:
+        logger.warning('Could not find the VXIPNPPATH env variable on your system that should point to the driver. '
+                       'Did you install the Optical Power Monitor software')
+        raise FileNotFoundError
 else:
-    path_dll = str(Path(os.environ['VXIPNPPATH']).joinpath('WinNT', 'Bin'))
-os.add_dll_directory(path_dll)
+    raise OSError(f"Unsupported operating system: {sys.platform}")
 
 
 def tlpm_path(tlpm: Path):

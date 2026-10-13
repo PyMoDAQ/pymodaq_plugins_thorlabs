@@ -23,16 +23,17 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
          hardware library.
 
     """
+    supported_platforms = ('win32',)  # a Windows driver
     _controller_units = BrushlessDCMotor.default_units
     is_multiaxes = True
-    _axes_names = {'1': 1, '2': 2, '3': 3}
-    _epsilon = 0.01
+    _axis_names = {'1': 1, '2': 2, '3': 3}
+    _epsilons = 0.01
     data_actuator_type = DataActuatorType.DataActuator
     params = [
                  {'title': 'Serial Number:', 'name': 'serial_number', 'type': 'list',
-                  'limits': serialnumbers_brushless, 'value': serialnumbers_brushless[0]}
+                  'limits': serialnumbers_brushless, 'value': serialnumbers_brushless[0] if len(serialnumbers_brushless)>0 else None,}
 
-             ] + comon_parameters_fun(is_multiaxes, axes_names=_axes_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
     def ini_attributes(self):
         self.controller: BrushlessDCMotor = None
@@ -140,8 +141,8 @@ class DAQ_Move_BrushlessDCMotor(DAQ_Move_base):
         value: (float) value of the relative target positioning
         """
         self._move_done = False
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
         self.controller.move_abs(self.target_value.value(), channel=self.axis_value,
                                  callback=self.move_done_callback)
