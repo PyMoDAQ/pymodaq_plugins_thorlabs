@@ -43,6 +43,7 @@ Actuators
 * **PRM1Z8_pylablib**: DC servo motorized 360° rotation mount (Thorlabs PRM1Z8) deprecated, use **DCServoKCube**
 * **BrushlessDCMotor**: Kinesis control of DC Brushless Motor (tested with the BBD201 controller)
 * **Kinesis_KPZ101**: Piezo Electric Stage Kinesis series (KPZ101)
+* **Kinesis_KDC101**: DC Servo Motor Kinesis series (KDC101)
 * **Kinesis_KIM101**: Four Channel Piezo Inertia Motion Kinesis series (KIM101)
 * **DCServoTCube**: DC Servo motors controlled using a TCube (tested with TDC001 and MTS50 motor)
 * **DCServoKCube**: DC Servo motors controlled using a KCube (tested with KDC101)
